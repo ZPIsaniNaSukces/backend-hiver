@@ -1,9 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { UsersModule } from './../src/users.module';
+import request from "supertest";
 
-describe('UsersController (e2e)', () => {
+import { INestApplication } from "@nestjs/common";
+import { Test, TestingModule } from "@nestjs/testing";
+
+import { UsersModule } from "./../src/users.module";
+
+describe("UsersController (e2e)", () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -15,12 +17,12 @@ describe('UsersController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it("/ (GET)", () => {
     // Blogoslawienstw od Bartusia
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return request(app.getHttpServer())
-      .get('/')
+      .get("/")
       .expect(200)
-      .expect('Hello World!');
+      .expect("Hello World!");
   });
 });

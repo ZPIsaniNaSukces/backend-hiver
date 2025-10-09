@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { Test, TestingModule } from "@nestjs/testing";
 
-describe('UsersController', () => {
+import { UsersController } from "./users.controller";
+import { UsersService } from "./users.service";
+
+describe("UsersController", () => {
   let usersController: UsersController;
 
   beforeEach(async () => {
@@ -14,9 +15,9 @@ describe('UsersController', () => {
     usersController = app.get<UsersController>(UsersController);
   });
 
-  describe('root', () => {
+  describe("root", () => {
     it('should return "Hello World!"', () => {
-      expect(usersController.getHello()).toBe('Hello World!');
+      expect(usersController.getHello()).toBe("Hello World!");
     });
   });
 });

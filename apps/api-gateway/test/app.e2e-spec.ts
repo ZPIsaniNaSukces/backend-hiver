@@ -1,9 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { ApiGatewayModule } from './../src/api-gateway.module';
+import request from "supertest";
 
-describe('ApiGatewayController (e2e)', () => {
+import { INestApplication } from "@nestjs/common";
+import { Test, TestingModule } from "@nestjs/testing";
+
+import { ApiGatewayModule } from "./../src/api-gateway.module";
+
+describe("ApiGatewayController (e2e)", () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -15,12 +17,12 @@ describe('ApiGatewayController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it("/ (GET)", () => {
     // Blogoslawienstw od Bartusia
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return request(app.getHttpServer())
-      .get('/')
+      .get("/")
       .expect(200)
-      .expect('Hello World!');
+      .expect("Hello World!");
   });
 });
