@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model game_options {
+  id                   String   @id
+  userId               String   @unique
+  startingBalance      Float
+  leverageMax          Float
+  riskPerTradePct      Float
+  takeProfitPctDefault Float
+  stopLossPctDefault   Float
+  timeframeDefault     String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime
+  users                users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model portfolios {
+  id           String      @id
+  userId       String
+  name         String
+  baseCurrency String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime
+  users        users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions    positions[]
+  trades       trades[]
+}
+
+model positions {
+  id          String     @id
+  portfolioId String
+  symbol      String
+  quantity    Float
+  avgPrice    Float
+  openedAt    DateTime
+  closedAt    DateTime?
+  pnlRealized Float      @default(0)
+  portfolios  portfolios @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+}
+
+model sessions {
+  id               String   @id
+  userId           String
+  refreshTokenHash String
+  ip               String
+  userAgent        String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  users            users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model trades {
+  id              String      @id
+  portfolioId     String
+  symbol          String
+  side            TradeSide
+  type            TradeType
+  quantity        Float
+  price           Float?
+  status          TradeStatus @default(NEW)
+  createdAt       DateTime    @default(now())
+  filledAt        DateTime?
+  rejectionReason String?
+  portfolios      portfolios  @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+}
+
+model users {
+  id           String        @id
+  email        String        @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  game_options game_options?
+  portfolios   portfolios[]
+  sessions     sessions[]
+  watchlists   watchlists[]
+}
+
+model watchlist_items {
+  id          String     @id
+  watchlistId String
+  symbol      String
+  note        String?
+  position    Int?
+  watchlists  watchlists @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+}
+
+model watchlists {
+  id              String            @id
+  userId          String
+  name            String
+  createdAt       DateTime          @default(now())
+  watchlist_items watchlist_items[]
+  users           users             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  NEW
+  FILLED
+  CANCELLED
+  REJECTED
+}
+
+enum TradeType {
+  MARKET
+  LIMIT
+}
