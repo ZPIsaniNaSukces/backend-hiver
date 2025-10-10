@@ -1,4 +1,6 @@
+version: "3"
 services:
+#kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -23,3 +25,23 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
     depends_on:
       - zookeeper
+  #our microservices
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: .
+      args:
+        - APP=api-gateway
+    restart: always
+    ports:
+      - 3000:3000
+  users:
+    container_name: users
+    build:
+      context: .
+      args:
+        - APP=users
+    restart: always
+    ports:
+      - 3001:3000
+  
