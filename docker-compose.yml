@@ -35,6 +35,9 @@ services:
     restart: always
     ports:
       - 3000:3000
+    environment:
+      USERS_SERVICE_HOST: users
+      USERS_SERVICE_PORT: 3001
   users:
     container_name: users
     build:
@@ -43,5 +46,7 @@ services:
         - APP=users
     restart: always
     ports:
-      - 3001:3000
-  
+      - 3001:3001
+    environment:
+      USERS_SERVICE_HOST: 0.0.0.0
+      USERS_SERVICE_PORT: 3001
