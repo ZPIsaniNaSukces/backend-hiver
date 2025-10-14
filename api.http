@@ -1,0 +1,89 @@
+@baseUrl = http://localhost:3000
+@userId = 1
+@teamId = 1
+@companyId = 1
+
+### Create user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "John",
+  "surname": "Doe",
+  "email": "john.doe@example.com",
+  "password": "P@ssw0rd!",
+  "phone": "+11234567890",
+  "role": "EMPLOYEE"
+}
+
+### Get all users
+GET {{baseUrl}}/users
+
+### Get user by id
+GET {{baseUrl}}/users/{{userId}}
+
+### Update user
+PATCH {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "name": "Johnny B. Goodee",
+  "phone": "+11987654321"
+}
+
+### Delete user
+DELETE {{baseUrl}}/users/{{userId}}
+
+### Create company
+POST {{baseUrl}}/companies
+Content-Type: application/json
+
+{
+  "name": "Acme Corp",
+  "domain": "acme.com"
+}
+
+### Get all companies
+GET {{baseUrl}}/companies
+
+### Get company by id
+GET {{baseUrl}}/companies/{{companyId}}
+
+### Update company
+PATCH {{baseUrl}}/companies/{{companyId}}
+Content-Type: application/json
+
+{
+  "name": "Acme Corporation",
+  "domain": "acme.example"
+}
+
+### Delete company
+DELETE {{baseUrl}}/companies/{{companyId}}
+
+### Create team
+POST {{baseUrl}}/teams
+Content-Type: application/json
+
+{
+  "name": "Engineering",
+  "companyId": {{companyId}}
+}
+
+### Get all teams
+GET {{baseUrl}}/teams
+
+### Get team by id
+GET {{baseUrl}}/teams/{{teamId}}
+
+### Update team
+PATCH {{baseUrl}}/teams/{{teamId}}
+Content-Type: application/json
+
+{
+  "name": "Product Engineering",
+  "companyId": {{companyId}}
+}
+
+### Delete team
+DELETE {{baseUrl}}/teams/{{teamId}}

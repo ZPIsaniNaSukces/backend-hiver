@@ -1,9 +1,21 @@
 import { NestFactory } from "@nestjs/core";
+import { Transport } from "@nestjs/microservices";
+import type { MicroserviceOptions } from "@nestjs/microservices";
 
-import { UsersModule } from "./users.module";
+import { UsersAppModule } from "./users-app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(UsersModule);
-  await app.listen(process.env.port ?? 3000);
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    UsersAppModule,
+    {
+      transport: Transport.KAFKA,
+      options: {
+        client: {
+          brokers: ["localhost:9092"],
+        },
+      },
+    },
+  );
+  await app.listen();
 }
 void bootstrap();
