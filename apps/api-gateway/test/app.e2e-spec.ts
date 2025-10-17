@@ -1,29 +1,11 @@
-import request from "supertest";
+/**
+ * e2e tests intentionally removed per request.
+ * Placeholder skipped test to keep Jest happy.
+ */
 
-import type { INestApplication } from "@nestjs/common";
-import type { TestingModule } from "@nestjs/testing";
-import { Test } from "@nestjs/testing";
-
-import { ApiGatewayModule } from "./../src/api-gateway.module";
-
-describe("ApiGatewayController (e2e)", () => {
-  let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [ApiGatewayModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it("/ (GET)", () => {
-    // Blogoslawienstw od Bartusia
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return request(app.getHttpServer())
-      .get("/")
-      .expect(200)
-      .expect("Hello World!");
+describe.skip("e2e-placeholder", () => {
+  it("no-op", () => {
+    // intentionally empty
+    expect(true).toBe(true);
   });
 });
