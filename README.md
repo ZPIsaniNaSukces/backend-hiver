@@ -1,98 +1,176 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend Hiver
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend Hiver is a multi-service NestJS workspace that exposes an HTTP API gateway and Kafka-powered feature services. The implementation uses Prisma for data access and ships with an authentication library (`libs/auth`) that can be reused across applications inside this monorepo.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- Node.js 22+
+- NestJS 11 (monorepo layout)
+- PostgreSQL + Prisma ORM
+- Apache Kafka (Kafkajs client)
+- JWT authentication with Passport
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Quick Start
 
-## Project setup
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start infrastructure services (PostgreSQL, Kafka, Zookeeper):
+   ```bash
+   docker compose up -d
+   ```
+3. Configure environment variables (see [.env.example](.env.example)) and create a `.env` file. At minimum set:
+   ```bash
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/hiver"
+   JWT_SECRET="change-me"
+   JWT_EXPIRES_IN="1h"
+   ```
+4. Generate the Prisma client (required after every schema change):
+   ```bash
+   npx prisma generate
+   ```
+5. Run the microservices:
 
-```bash
-$ npm install
+   ```bash
+   # API Gateway (HTTP)
+   npm run start:dev -- api-gateway
+
+   # Users service (Kafka microservice)
+   npm run start:dev -- users
+   ```
+
+## Authentication
+
+The `libs/auth` package centralises JWT-based authentication, role enforcement, and request decorators. Import everything via the path alias `@app/auth`.
+
+### Environment variables
+
+- `JWT_SECRET` – symmetric signing key used by the JWT module. Provide a long, random value in production.
+- `JWT_EXPIRES_IN` – token lifetime passed to `JwtService.signAsync` (examples: `1h`, `15m`).
+
+### REST endpoints
+
+The API gateway exposes two authentication endpoints via `AuthController`:
+
+| Method | Path          | Description                                                      |
+| ------ | ------------- | ---------------------------------------------------------------- |
+| POST   | `/auth/login` | Validates credentials and returns a JWT + user payload.          |
+| GET    | `/auth/me`    | Requires a bearer token; returns the authenticated user profile. |
+
+`POST /auth/login` expects:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "plainText"
+}
 ```
 
-## Compile and run the project
+Successful responses look like:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```json
+{
+  "accessToken": "<jwt>",
+  "user": {
+    "id": 1,
+    "name": "Jane",
+    "surname": "Doe",
+    "email": "user@example.com",
+    "role": "ADMIN",
+    "phone": null,
+    "teamId": 2,
+    "companyId": 3
+  }
+}
 ```
 
-## Run tests
+Include the token in subsequent requests: `Authorization: Bearer <jwt>`.
 
-```bash
-# unit tests
-$ npm run test
+### Guards, decorators, and helpers
 
-# e2e tests
-$ npm run test:e2e
+All items below are exported from `@app/auth`:
 
-# test coverage
-$ npm run test:cov
+- `JwtAuthGuard` – wraps Passport's `AuthGuard("jwt")`; protects HTTP routes.
+- `RolesGuard` – enforces roles declared with the `@Roles(...roles)` decorator.
+- `@Roles(...roles)` – attach one or more `USER_ROLE` values to a handler or controller.
+- `@CurrentUser(property?)` – access the authenticated `AuthenticatedUser` instance (or a single property) from the request.
+
+Example usage inside a controller:
+
+```ts
+import { CurrentUser, JwtAuthGuard, Roles } from "@app/auth";
+import { USER_ROLE } from "@prisma/client";
+
+import { Controller, Get, UseGuards } from "@nestjs/common";
+
+@Controller("reports")
+@UseGuards(JwtAuthGuard)
+export class ReportsController {
+  @Get("admin")
+  @Roles(USER_ROLE.ADMIN)
+  getAdminReport(@CurrentUser("id") adminId: number) {
+    return { adminId };
+  }
+}
 ```
 
-## Deployment
+### Password handling
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+The users service hashes passwords with `bcrypt` when creating or updating accounts. The Prisma schema enforces unique user emails to support credential lookups. Existing plaintext passwords should be re-seeded with hashed values before deploying to production.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Roles
+
+Authentication leverages the `USER_ROLE` enum defined in `prisma/schema.prisma`:
+
+- `ADMIN`
+- `MANAGER`
+- `EMPLOYEE`
+
+Use these values with the `@Roles` decorator and `RolesGuard` to lock down endpoints.
+
+## Database and Prisma
+
+- Inspect or edit the schema in `prisma/schema.prisma`.
+- After modifying the schema run migrations, e.g.:
+  ```bash
+  npx prisma migrate dev --name add-user-email-unique
+  ```
+- Update the generated client whenever the schema changes:
+  ```bash
+  npx prisma generate
+  ```
+
+## Testing
+
+Run all Jest suites:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Key tests:
 
-## Resources
+- `libs/auth/src/auth.service.spec.ts` verifies credential validation, JWT issuance, and sanitised responses.
+- `libs/auth/src/guards/roles.guard.spec.ts` covers role-based access behaviour.
 
-Check out a few resources that may come in handy when working with NestJS:
+Collect coverage with:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run test:cov
+```
 
-## Support
+## Useful scripts
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- `npm run lint` – ESLint with auto-fix rules.
+- `npm run typecheck` – project-wide TypeScript validation.
+- `npm run start:dev users` – start the users Kafka microservice.
+- `npm run start:dev api-gateway` – start the HTTP gateway with live reload.
 
-## Stay in touch
+## Contributing
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. Create a feature branch.
+2. Update or add tests (the auth library includes reference unit tests).
+3. Run `npm run lint` and `npm run typecheck` before committing.
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Happy coding!
