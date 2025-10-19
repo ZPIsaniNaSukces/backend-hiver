@@ -15,16 +15,23 @@ Content-Type: application/json
 
 ###
 
-@token = {{login.response.body.accessToken}}
+@accessToken = {{login.response.body.accessToken}}
+@accessTokenExpiresAt = {{login.response.body.accessTokenExpiresAt}}
+@refreshToken = {{login.response.body.refreshToken}}
+@refreshTokenExpiresAt = {{login.response.body.refreshTokenExpiresAt}}
+
+### Inspect token metadata
+# Access token expires at: {{accessTokenExpiresAt}}
+# Refresh token expires at: {{refreshTokenExpiresAt}}
 
 ### Get current user
 GET {{baseUrl}}/auth/me
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Create user
 POST {{baseUrl}}/users
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "John",
@@ -37,30 +44,30 @@ Authorization: Bearer {{token}}
 
 ### Get all users
 GET {{baseUrl}}/users
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Get user by id
 GET {{baseUrl}}/users/{{userId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Update user
 PATCH {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
-  "name": "Johnny B. Goodee",
+  "name": "Johnny B. Goode",
   "phone": "+11987654321"
 }
 
 ### Delete user
 DELETE {{baseUrl}}/users/{{userId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Create company
 POST {{baseUrl}}/companies
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Acme Corp",
@@ -69,16 +76,16 @@ Authorization: Bearer {{token}}
 
 ### Get all companies
 GET {{baseUrl}}/companies
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Get company by id
 GET {{baseUrl}}/companies/{{companyId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Update company
 PATCH {{baseUrl}}/companies/{{companyId}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Acme Corporation",
@@ -87,12 +94,12 @@ Authorization: Bearer {{token}}
 
 ### Delete company
 DELETE {{baseUrl}}/companies/{{companyId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Create team
 POST {{baseUrl}}/teams
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Engineering",
@@ -101,16 +108,16 @@ Authorization: Bearer {{token}}
 
 ### Get all teams
 GET {{baseUrl}}/teams
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Get team by id
 GET {{baseUrl}}/teams/{{teamId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 ### Update team
 PATCH {{baseUrl}}/teams/{{teamId}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Product Engineering",
@@ -119,4 +126,4 @@ Authorization: Bearer {{token}}
 
 ### Delete team
 DELETE {{baseUrl}}/teams/{{teamId}}
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
