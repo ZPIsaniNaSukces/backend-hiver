@@ -20,9 +20,14 @@ Content-Type: application/json
 @refreshToken = {{login.response.body.refreshToken}}
 @refreshTokenExpiresAt = {{login.response.body.refreshTokenExpiresAt}}
 
-### Inspect token metadata
-# Access token expires at: {{accessTokenExpiresAt}}
-# Refresh token expires at: {{refreshTokenExpiresAt}}
+### Refresh token
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
 
 ### Get current user
 GET {{baseUrl}}/auth/me
