@@ -11,8 +11,8 @@ import { CompaniesController } from "./companies.controller";
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: "companies-gateway",
-            brokers: ["localhost:9092"],
+            clientId: "companies",
+            brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
           },
           consumer: {
             groupId: "companies-gateway-consumer",

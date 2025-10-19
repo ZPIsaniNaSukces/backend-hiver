@@ -1,11 +1,30 @@
 @baseUrl = http://localhost:3000
-@userId = 1
+@userId = 9
 @teamId = 1
 @companyId = 1
+
+### Login as Admin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.admin@acme.com",
+  "password": "ChangeMe123!"
+}
+
+###
+
+@token = {{login.response.body.accessToken}}
+
+### Get current user
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
 
 ### Create user
 POST {{baseUrl}}/users
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "John",
@@ -18,13 +37,16 @@ Content-Type: application/json
 
 ### Get all users
 GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
 
 ### Get user by id
 GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{token}}
 
 ### Update user
 PATCH {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Johnny B. Goodee",
@@ -33,10 +55,12 @@ Content-Type: application/json
 
 ### Delete user
 DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{token}}
 
 ### Create company
 POST {{baseUrl}}/companies
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Acme Corp",
@@ -45,13 +69,16 @@ Content-Type: application/json
 
 ### Get all companies
 GET {{baseUrl}}/companies
+Authorization: Bearer {{token}}
 
 ### Get company by id
 GET {{baseUrl}}/companies/{{companyId}}
+Authorization: Bearer {{token}}
 
 ### Update company
 PATCH {{baseUrl}}/companies/{{companyId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Acme Corporation",
@@ -60,10 +87,12 @@ Content-Type: application/json
 
 ### Delete company
 DELETE {{baseUrl}}/companies/{{companyId}}
+Authorization: Bearer {{token}}
 
 ### Create team
 POST {{baseUrl}}/teams
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Engineering",
@@ -72,13 +101,16 @@ Content-Type: application/json
 
 ### Get all teams
 GET {{baseUrl}}/teams
+Authorization: Bearer {{token}}
 
 ### Get team by id
 GET {{baseUrl}}/teams/{{teamId}}
+Authorization: Bearer {{token}}
 
 ### Update team
 PATCH {{baseUrl}}/teams/{{teamId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Product Engineering",
@@ -87,3 +119,4 @@ Content-Type: application/json
 
 ### Delete team
 DELETE {{baseUrl}}/teams/{{teamId}}
+Authorization: Bearer {{token}}
