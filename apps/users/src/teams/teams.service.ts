@@ -1,9 +1,7 @@
+import { CreateTeamDto, UpdateTeamDto } from "@app/contracts/teams";
 import { PrismaService } from "@app/prisma/prisma.service";
 
 import { Injectable } from "@nestjs/common";
-
-import { CreateTeamDto } from "./dto/create-team.dto";
-import { UpdateTeamDto } from "./dto/update-team.dto";
 
 @Injectable()
 export class TeamsService {
