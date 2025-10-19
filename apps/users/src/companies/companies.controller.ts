@@ -1,30 +1,34 @@
+import {
+  CompaniesMessageTopic,
+  CreateCompanyDto,
+  UpdateCompanyDto,
+} from "@app/contracts/companies";
+
 import { Controller, ParseIntPipe } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { CompaniesService } from "./companies.service";
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
 
 @Controller()
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
-  @MessagePattern("createCompany")
+  @MessagePattern(CompaniesMessageTopic.CREATE)
   async create(@Payload() createCompanyDto: CreateCompanyDto) {
     return await this.companiesService.create(createCompanyDto);
   }
 
-  @MessagePattern("findAllCompanies")
+  @MessagePattern(CompaniesMessageTopic.FIND_ALL)
   async findAll() {
     return await this.companiesService.findAll();
   }
 
-  @MessagePattern("findOneCompany")
+  @MessagePattern(CompaniesMessageTopic.FIND_ONE)
   async findOne(@Payload(ParseIntPipe) id: number) {
     return await this.companiesService.findOne(id);
   }
 
-  @MessagePattern("updateCompany")
+  @MessagePattern(CompaniesMessageTopic.UPDATE)
   async update(
     @Payload(ParseIntPipe) id: number,
     @Payload() updateCompanyDto: UpdateCompanyDto,
@@ -32,7 +36,7 @@ export class CompaniesController {
     return await this.companiesService.update(id, updateCompanyDto);
   }
 
-  @MessagePattern("removeCompany")
+  @MessagePattern(CompaniesMessageTopic.REMOVE)
   async remove(@Payload(ParseIntPipe) id: number) {
     return await this.companiesService.remove(id);
   }

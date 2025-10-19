@@ -1,7 +1,6 @@
 import { AuthModule } from "@app/auth";
 
 import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
 
 import { CompaniesModule } from "./companies/companies.module";
 import { TeamsModule } from "./teams/teams.module";

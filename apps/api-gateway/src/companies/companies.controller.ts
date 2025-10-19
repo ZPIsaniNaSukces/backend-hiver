@@ -1,4 +1,11 @@
 import {
+  COMPANIES_MESSAGE_TOPICS,
+  CompaniesMessageTopic,
+  CreateCompanyDto,
+  UpdateCompanyDto,
+} from "@app/contracts/companies";
+
+import {
   Body,
   Controller,
   Delete,
@@ -13,9 +20,6 @@ import {
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
-
 @Controller("companies")
 export class CompaniesController implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -23,14 +27,7 @@ export class CompaniesController implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    const patterns = [
-      "createCompany",
-      "findAllCompanies",
-      "findOneCompany",
-      "updateCompany",
-      "removeCompany",
-    ];
-    for (const pattern of patterns) {
+    for (const pattern of COMPANIES_MESSAGE_TOPICS) {
       this.companiesClient.subscribeToResponseOf(pattern);
     }
     await this.companiesClient.connect();
@@ -42,17 +39,20 @@ export class CompaniesController implements OnModuleInit, OnModuleDestroy {
 
   @Post()
   create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companiesClient.send("createCompany", createCompanyDto);
+    return this.companiesClient.send(
+      CompaniesMessageTopic.CREATE,
+      createCompanyDto,
+    );
   }
 
   @Get()
   findAll() {
-    return this.companiesClient.send("findAllCompanies", {});
+    return this.companiesClient.send(CompaniesMessageTopic.FIND_ALL, {});
   }
 
   @Get(":id")
   findOne(@Param("id", ParseIntPipe) id: number) {
-    return this.companiesClient.send("findOneCompany", id);
+    return this.companiesClient.send(CompaniesMessageTopic.FIND_ONE, id);
   }
 
   @Patch(":id")
@@ -61,11 +61,14 @@ export class CompaniesController implements OnModuleInit, OnModuleDestroy {
     @Body() updateCompanyDto: UpdateCompanyDto,
   ) {
     updateCompanyDto.id = id;
-    return this.companiesClient.send("updateCompany", updateCompanyDto);
+    return this.companiesClient.send(
+      CompaniesMessageTopic.UPDATE,
+      updateCompanyDto,
+    );
   }
 
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
-    return this.companiesClient.send("removeCompany", id);
+    return this.companiesClient.send(CompaniesMessageTopic.REMOVE, id);
   }
 }
