@@ -4,7 +4,7 @@ import { ForbiddenException } from "@nestjs/common";
 import type { ExecutionContext } from "@nestjs/common";
 import type { Reflector } from "@nestjs/core";
 
-import type { AuthenticatedUser } from "../types/authenticated-user.type";
+import type { AuthenticatedUser } from "../interfaces/authenticated-user.type";
 import { RolesGuard } from "./roles.guard";
 
 const createContext = (user?: Partial<AuthenticatedUser>): ExecutionContext => {
