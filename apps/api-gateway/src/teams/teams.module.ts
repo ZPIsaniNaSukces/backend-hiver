@@ -11,8 +11,8 @@ import { TeamsController } from "./teams.controller";
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: "teams-gateway",
-            brokers: ["localhost:9092"],
+            clientId: "teams",
+            brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
           },
           consumer: {
             groupId: "teams-gateway-consumer",
