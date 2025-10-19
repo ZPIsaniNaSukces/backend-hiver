@@ -19,7 +19,7 @@ const bcryptCompareMock = bcrypt.compare as jest.MockedFunction<
 describe("AuthService", () => {
   const prismaServiceMock = {
     user: {
-      findFirst: jest.fn(),
+      findUnique: jest.fn(),
     },
   };
 
@@ -43,7 +43,7 @@ describe("AuthService", () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    prismaServiceMock.user.findFirst.mockReset();
+    prismaServiceMock.user.findUnique.mockReset();
     jwtServiceMock.signAsync.mockReset();
     bcryptCompareMock.mockReset();
 
@@ -66,7 +66,7 @@ describe("AuthService", () => {
 
   describe("validateUser", () => {
     it("returns a sanitized user when credentials are valid", async () => {
-      prismaServiceMock.user.findFirst.mockResolvedValue(validUserRecord);
+      prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
       bcryptCompareMock.mockResolvedValue(true);
 
       const user = await authService.validateUser(
@@ -91,7 +91,7 @@ describe("AuthService", () => {
     });
 
     it("throws when the password hash is missing", async () => {
-      prismaServiceMock.user.findFirst.mockResolvedValue({
+      prismaServiceMock.user.findUnique.mockResolvedValue({
         ...validUserRecord,
         password: null,
       });
@@ -103,7 +103,7 @@ describe("AuthService", () => {
     });
 
     it("throws when the password does not match", async () => {
-      prismaServiceMock.user.findFirst.mockResolvedValue(validUserRecord);
+      prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
       bcryptCompareMock.mockResolvedValue(false);
 
       await expect(
@@ -114,7 +114,7 @@ describe("AuthService", () => {
 
   describe("login", () => {
     it("returns an access token with the sanitized user", async () => {
-      prismaServiceMock.user.findFirst.mockResolvedValue(validUserRecord);
+      prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
       bcryptCompareMock.mockResolvedValue(true);
       jwtServiceMock.signAsync.mockResolvedValue("jwt-token");
 

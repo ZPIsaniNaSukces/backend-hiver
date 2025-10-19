@@ -9,7 +9,7 @@ import {
 import { Reflector } from "@nestjs/core";
 
 import { ROLES_KEY } from "../decorators/roles.decorator";
-import type { AuthenticatedUser } from "../types/authenticated-user.type";
+import type { AuthenticatedUser } from "../interfaces/authenticated-user.type";
 
 @Injectable()
 export class RolesGuard implements CanActivate {

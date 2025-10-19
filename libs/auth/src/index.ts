@@ -7,4 +7,4 @@ export * from "./guards/jwt-auth.guard";
 export * from "./guards/roles.guard";
 export * from "./interfaces/jwt-payload.interface";
 export * from "./dto/login.dto";
-export * from "./types/authenticated-user.type";
+export * from "./interfaces/authenticated-user.type";

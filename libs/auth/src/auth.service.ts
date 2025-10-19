@@ -5,8 +5,8 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 
 import type { LoginDto } from "./dto/login.dto";
+import type { AuthenticatedUser } from "./interfaces/authenticated-user.type";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
-import type { AuthenticatedUser } from "./types/authenticated-user.type";
 
 @Injectable()
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
