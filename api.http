@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3000
 @userId = 9
 @teamId = 1
-@companyId = 1
+@companyId = 3
 
 ### Login as Admin
 # @name login
@@ -36,10 +36,11 @@ Authorization: Bearer {{accessToken}}
 {
   "name": "John",
   "surname": "Doe",
-  "email": "john.doe@example.com",
+  "email": "aaa.bbb@example.com",
   "password": "P@ssw0rd!",
   "phone": "+11234567890",
-  "role": "EMPLOYEE"
+  "role": "EMPLOYEE",
+  "companyId": {{companyId}}
 }
 
 ### Get all users

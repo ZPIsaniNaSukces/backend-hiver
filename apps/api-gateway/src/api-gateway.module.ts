@@ -2,12 +2,10 @@ import { AuthModule } from "@app/auth";
 
 import { Module } from "@nestjs/common";
 
-import { CompaniesModule } from "./companies/companies.module";
-import { TeamsModule } from "./teams/teams.module";
-import { UsersModule } from "./users/users.module";
+import { UsersAppModule } from "./users-app/users-app.module";
 
 @Module({
-  imports: [AuthModule, UsersModule, TeamsModule, CompaniesModule],
+  imports: [AuthModule, UsersAppModule],
   controllers: [],
   providers: [],
 })
