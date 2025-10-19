@@ -38,8 +38,8 @@ model User {
   phone     String?
   role      USER_ROLE
   teamId    Int?
-  companyId Int?
+  companyId Int
   team      Team?     @relation(fields: [teamId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  company   Company?  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 

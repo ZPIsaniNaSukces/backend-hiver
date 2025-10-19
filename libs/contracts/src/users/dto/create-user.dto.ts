@@ -8,5 +8,5 @@ export class CreateUserDto {
   phone?: string;
   role: USER_ROLE;
   teamId?: number;
-  companyId?: number;
+  companyId: number;
 }
