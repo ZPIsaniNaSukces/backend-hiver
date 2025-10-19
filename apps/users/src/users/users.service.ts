@@ -1,12 +1,10 @@
 import type { AuthenticatedUser } from "@app/auth";
+import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
 import type { User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import { Injectable } from "@nestjs/common";
-
-import { CreateUserDto } from "../../../api-gateway/src/users/dto/create-user.dto";
-import { UpdateUserDto } from "../../../api-gateway/src/users/dto/update-user.dto";
 
 @Injectable()
 export class UsersService {

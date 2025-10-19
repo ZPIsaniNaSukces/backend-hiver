@@ -1,4 +1,11 @@
 import {
+  CreateTeamDto,
+  TEAMS_MESSAGE_TOPICS,
+  TeamsMessageTopic,
+  UpdateTeamDto,
+} from "@app/contracts/teams";
+
+import {
   Body,
   Controller,
   Delete,
@@ -13,9 +20,6 @@ import {
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 
-import { CreateTeamDto } from "./dto/create-team.dto";
-import { UpdateTeamDto } from "./dto/update-team.dto";
-
 @Controller("teams")
 export class TeamsController implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -23,14 +27,7 @@ export class TeamsController implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    const patterns = [
-      "createTeam",
-      "findAllTeams",
-      "findOneTeam",
-      "updateTeam",
-      "removeTeam",
-    ];
-    for (const pattern of patterns) {
+    for (const pattern of TEAMS_MESSAGE_TOPICS) {
       this.teamsClient.subscribeToResponseOf(pattern);
     }
     await this.teamsClient.connect();
@@ -42,17 +39,17 @@ export class TeamsController implements OnModuleInit, OnModuleDestroy {
 
   @Post()
   create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamsClient.send("createTeam", createTeamDto);
+    return this.teamsClient.send(TeamsMessageTopic.CREATE, createTeamDto);
   }
 
   @Get()
   findAll() {
-    return this.teamsClient.send("findAllTeams", {});
+    return this.teamsClient.send(TeamsMessageTopic.FIND_ALL, {});
   }
 
   @Get(":id")
   findOne(@Param("id", ParseIntPipe) id: number) {
-    return this.teamsClient.send("findOneTeam", id);
+    return this.teamsClient.send(TeamsMessageTopic.FIND_ONE, id);
   }
 
   @Patch(":id")
@@ -61,11 +58,11 @@ export class TeamsController implements OnModuleInit, OnModuleDestroy {
     @Body() updateTeamDto: UpdateTeamDto,
   ) {
     updateTeamDto.id = id;
-    return this.teamsClient.send("updateTeam", updateTeamDto);
+    return this.teamsClient.send(TeamsMessageTopic.UPDATE, updateTeamDto);
   }
 
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
-    return this.teamsClient.send("removeTeam", id);
+    return this.teamsClient.send(TeamsMessageTopic.REMOVE, id);
   }
 }

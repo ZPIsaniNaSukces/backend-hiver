@@ -1,4 +1,10 @@
 import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import {
+  CreateUserDto,
+  USERS_MESSAGE_TOPICS,
+  UpdateUserDto,
+  UsersMessageTopic,
+} from "@app/contracts/users";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -17,9 +23,6 @@ import {
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController implements OnModuleInit, OnModuleDestroy {
@@ -28,14 +31,7 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    const patterns = [
-      "createUser",
-      "findAllUsers",
-      "findOneUser",
-      "updateUser",
-      "removeUser",
-    ];
-    for (const pattern of patterns) {
+    for (const pattern of USERS_MESSAGE_TOPICS) {
       this.usersClient.subscribeToResponseOf(pattern);
     }
     await this.usersClient.connect();
@@ -48,19 +44,19 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
   @Post()
   @Roles(USER_ROLE.ADMIN)
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersClient.send("createUser", createUserDto);
+    return this.usersClient.send(UsersMessageTopic.CREATE, createUserDto);
   }
 
   @Get()
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
   findAll(@CurrentUser("id") _userId: number) {
-    return this.usersClient.send("findAllUsers", {});
+    return this.usersClient.send(UsersMessageTopic.FIND_ALL, {});
   }
 
   @Get(":id")
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
   findOne(@Param("id", ParseIntPipe) id: number) {
-    return this.usersClient.send("findOneUser", id);
+    return this.usersClient.send(UsersMessageTopic.FIND_ONE, id);
   }
 
   @Patch(":id")
@@ -70,12 +66,12 @@ export class UsersController implements OnModuleInit, OnModuleDestroy {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     updateUserDto.id = id;
-    return this.usersClient.send("updateUser", updateUserDto);
+    return this.usersClient.send(UsersMessageTopic.UPDATE, updateUserDto);
   }
 
   @Delete(":id")
   @Roles(USER_ROLE.ADMIN)
   remove(@Param("id", ParseIntPipe) id: number) {
-    return this.usersClient.send("removeUser", id);
+    return this.usersClient.send(UsersMessageTopic.REMOVE, id);
   }
 }

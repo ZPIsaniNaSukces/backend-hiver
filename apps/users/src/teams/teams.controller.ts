@@ -1,35 +1,39 @@
+import {
+  CreateTeamDto,
+  TeamsMessageTopic,
+  UpdateTeamDto,
+} from "@app/contracts/teams";
+
 import { Controller, ParseIntPipe } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 
-import { CreateTeamDto } from "./dto/create-team.dto";
-import { UpdateTeamDto } from "./dto/update-team.dto";
 import { TeamsService } from "./teams.service";
 
 @Controller()
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
-  @MessagePattern("createTeam")
+  @MessagePattern(TeamsMessageTopic.CREATE)
   async create(@Payload() createTeamDto: CreateTeamDto) {
     return await this.teamsService.create(createTeamDto);
   }
 
-  @MessagePattern("findAllTeams")
+  @MessagePattern(TeamsMessageTopic.FIND_ALL)
   async findAll() {
     return await this.teamsService.findAll();
   }
 
-  @MessagePattern("findOneTeam")
+  @MessagePattern(TeamsMessageTopic.FIND_ONE)
   async findOne(@Payload(ParseIntPipe) id: number) {
     return await this.teamsService.findOne(id);
   }
 
-  @MessagePattern("updateTeam")
+  @MessagePattern(TeamsMessageTopic.UPDATE)
   async update(@Payload(ParseIntPipe) updateTeamDto: UpdateTeamDto) {
     return await this.teamsService.update(updateTeamDto.id, updateTeamDto);
   }
 
-  @MessagePattern("removeTeam")
+  @MessagePattern(TeamsMessageTopic.REMOVE)
   async remove(@Payload(ParseIntPipe) id: number) {
     return await this.teamsService.remove(id);
   }
