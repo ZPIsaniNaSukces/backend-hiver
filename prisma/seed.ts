@@ -76,8 +76,11 @@ async function main() {
 
   for (const u of usersData) {
     const company = companies.find((c) => c.name === u.companyName);
+    if (company == null) {
+      throw new Error(`Seed error: company not found: ${u.companyName}`);
+    }
     const team = teams.find(
-      (t) => t.name === u.teamName && t.companyId === company?.id,
+      (t) => t.name === u.teamName && t.companyId === company.id,
     );
     const hashed = await hashPassword(u.password);
 
@@ -88,7 +91,7 @@ async function main() {
         email: u.email,
         password: hashed,
         role: u.role,
-        companyId: company?.id ?? null,
+        companyId: company.id,
         teamId: team?.id ?? null,
       },
     });

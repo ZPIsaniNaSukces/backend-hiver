@@ -44,7 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ...user,
       phone: user.phone ?? null,
       teamId: user.teamId ?? null,
-      companyId: user.companyId ?? null,
+      companyId: user.companyId,
     } satisfies AuthenticatedUser;
   }
 }
