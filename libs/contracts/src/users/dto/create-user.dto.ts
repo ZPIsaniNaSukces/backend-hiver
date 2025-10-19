@@ -1,12 +1,43 @@
-import type { USER_ROLE } from "@prisma/client";
+import { USER_ROLE } from "@prisma/client";
+import { Type } from "class-transformer";
+import {
+  IsEmail,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class CreateUserDto {
-  name: string;
-  surname: string;
-  email: string;
-  password: string;
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  surname!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+
+  @IsOptional()
+  @IsString()
   phone?: string;
-  role: USER_ROLE;
+
+  @IsEnum(USER_ROLE)
+  role!: USER_ROLE;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   teamId?: number;
-  companyId: number;
+
+  @Type(() => Number)
+  @IsInt()
+  companyId!: number;
 }

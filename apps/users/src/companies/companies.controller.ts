@@ -4,7 +4,7 @@ import {
   UpdateCompanyDto,
 } from "@app/contracts/companies";
 
-import { Controller, ParseIntPipe } from "@nestjs/common";
+import { BadRequestException, Controller, ParseIntPipe } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { CompaniesService } from "./companies.service";
@@ -29,10 +29,12 @@ export class CompaniesController {
   }
 
   @MessagePattern(CompaniesMessageTopic.UPDATE)
-  async update(
-    @Payload(ParseIntPipe) id: number,
-    @Payload() updateCompanyDto: UpdateCompanyDto,
-  ) {
+  async update(@Payload() updateCompanyDto: UpdateCompanyDto) {
+    const { id } = updateCompanyDto;
+    if (id == null) {
+      throw new BadRequestException("id is required");
+    }
+
     return await this.companiesService.update(id, updateCompanyDto);
   }
 

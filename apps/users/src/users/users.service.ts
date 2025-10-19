@@ -36,9 +36,7 @@ export class UsersService {
           ? createUserDto.teamId
           : undefined,
       companyId:
-        createUserDto.companyId != null && createUserDto.companyId > 0
-          ? createUserDto.companyId
-          : undefined,
+        createUserDto.companyId > 0 ? createUserDto.companyId : undefined,
     } satisfies Parameters<typeof this.prisma.user.create>[0]["data"];
 
     const user = await this.prisma.user.create({ data });

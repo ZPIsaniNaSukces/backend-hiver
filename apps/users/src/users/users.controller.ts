@@ -4,7 +4,7 @@ import {
   UsersMessageTopic,
 } from "@app/contracts/users";
 
-import { Controller, ParseIntPipe } from "@nestjs/common";
+import { BadRequestException, Controller, ParseIntPipe } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { UsersService } from "./users.service";
@@ -30,7 +30,12 @@ export class UsersController {
 
   @MessagePattern(UsersMessageTopic.UPDATE)
   async update(@Payload() updateUserDto: UpdateUserDto) {
-    return await this.usersService.update(updateUserDto.id, updateUserDto);
+    const { id } = updateUserDto;
+    if (id == null) {
+      throw new BadRequestException("id is required");
+    }
+
+    return await this.usersService.update(id, updateUserDto);
   }
 
   @MessagePattern(UsersMessageTopic.REMOVE)
