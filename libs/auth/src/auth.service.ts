@@ -55,7 +55,7 @@ export class AuthService {
       role: user.role,
       phone: user.phone ?? null,
       teamId: user.teamId ?? null,
-      companyId: user.companyId ?? null,
+      companyId: user.companyId,
     } satisfies AuthenticatedUser;
   }
 

@@ -1,7 +1,7 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
-import type { User } from "@prisma/client";
+import type { Prisma, User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import { Injectable } from "@nestjs/common";
@@ -17,27 +17,26 @@ export class UsersService {
       ...rest,
       phone: rest.phone ?? null,
       teamId: rest.teamId ?? null,
-      companyId: rest.companyId ?? null,
+      companyId: rest.companyId,
     };
   }
 
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
-    const data = {
+    const data: Prisma.UserUncheckedCreateInput = {
       name: createUserDto.name,
       surname: createUserDto.surname,
       email: createUserDto.email,
       password: hashedPassword,
-      phone: createUserDto.phone ?? undefined,
+      phone: createUserDto.phone ?? null,
       role: createUserDto.role,
       teamId:
         createUserDto.teamId != null && createUserDto.teamId > 0
           ? createUserDto.teamId
-          : undefined,
-      companyId:
-        createUserDto.companyId > 0 ? createUserDto.companyId : undefined,
-    } satisfies Parameters<typeof this.prisma.user.create>[0]["data"];
+          : null,
+      companyId: createUserDto.companyId,
+    };
 
     const user = await this.prisma.user.create({ data });
     return this.toAuthenticatedUser(user);
@@ -65,22 +64,22 @@ export class UsersService {
         ? undefined
         : await bcrypt.hash(updateUserDto.password, 12);
 
-    const data = {
+    const data: Prisma.UserUncheckedUpdateInput = {
       name: updateUserDto.name,
       surname: updateUserDto.surname,
       email: updateUserDto.email,
       password: hashedPassword,
-      phone: updateUserDto.phone ?? undefined,
+      phone: updateUserDto.phone ?? null,
       role: updateUserDto.role,
       teamId:
         updateUserDto.teamId != null && updateUserDto.teamId > 0
           ? updateUserDto.teamId
-          : undefined,
+          : null,
       companyId:
         updateUserDto.companyId != null && updateUserDto.companyId > 0
           ? updateUserDto.companyId
           : undefined,
-    } satisfies Parameters<typeof this.prisma.user.update>[0]["data"];
+    };
 
     const user = await this.prisma.user.update({
       where: { id },
