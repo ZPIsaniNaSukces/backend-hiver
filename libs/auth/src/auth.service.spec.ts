@@ -27,6 +27,7 @@ describe("AuthService", () => {
   const jwtServiceMock = {
     signAsync: jest.fn(),
     decode: jest.fn(),
+    verifyAsync: jest.fn(),
   };
 
   const configServiceMock = {
@@ -52,6 +53,7 @@ describe("AuthService", () => {
     prismaServiceMock.user.findUnique.mockReset();
     jwtServiceMock.signAsync.mockReset();
     jwtServiceMock.decode.mockReset();
+    jwtServiceMock.verifyAsync.mockReset();
     bcryptCompareMock.mockReset();
     configServiceMock.get.mockReset();
 
@@ -191,6 +193,100 @@ describe("AuthService", () => {
           expiresIn: "30d",
         },
       );
+    });
+
+    describe("refresh", () => {
+      it("re-issues tokens when the refresh token is valid", async () => {
+        configServiceMock.get.mockImplementation((key: string) => {
+          const values: Record<string, string> = {
+            JWT_REFRESH_SECRET: "refresh-secret",
+            JWT_REFRESH_EXPIRES_IN: "14d",
+            JWT_SECRET: "jwt-secret",
+          };
+          return values[key];
+        });
+
+        jwtServiceMock.verifyAsync.mockResolvedValue({
+          sub: validUserRecord.id,
+          email: validUserRecord.email,
+          role: validUserRecord.role,
+        });
+
+        prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
+
+        const accessExp = 1_700_173_600;
+        const refreshExp = 1_700_259_200;
+
+        jwtServiceMock.signAsync
+          .mockResolvedValueOnce("next-access-token")
+          .mockResolvedValueOnce("next-refresh-token");
+        jwtServiceMock.decode.mockImplementation((token: string) => {
+          if (token === "next-access-token") {
+            return { exp: accessExp };
+          }
+          if (token === "next-refresh-token") {
+            return { exp: refreshExp };
+          }
+          return null;
+        });
+
+        const result = await authService.refresh("old-refresh-token");
+
+        expect(jwtServiceMock.verifyAsync).toHaveBeenCalledWith(
+          "old-refresh-token",
+          { secret: "refresh-secret" },
+        );
+        expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(1, {
+          sub: validUserRecord.id,
+          email: validUserRecord.email,
+          role: validUserRecord.role,
+        });
+        expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
+          2,
+          {
+            sub: validUserRecord.id,
+            email: validUserRecord.email,
+            role: validUserRecord.role,
+          },
+          {
+            secret: "refresh-secret",
+            expiresIn: "14d",
+          },
+        );
+
+        expect(result).toEqual({
+          accessToken: "next-access-token",
+          accessTokenExpiresAt: new Date(accessExp * 1000).toISOString(),
+          refreshToken: "next-refresh-token",
+          refreshTokenExpiresAt: new Date(refreshExp * 1000).toISOString(),
+          user: {
+            id: validUserRecord.id,
+            name: validUserRecord.name,
+            surname: validUserRecord.surname,
+            email: validUserRecord.email,
+            role: validUserRecord.role,
+            phone: validUserRecord.phone,
+            teamId: validUserRecord.teamId,
+            companyId: validUserRecord.companyId,
+          },
+        });
+      });
+
+      it("throws when the refresh token is invalid", async () => {
+        configServiceMock.get.mockImplementation((key: string) => {
+          const values: Record<string, string> = {
+            JWT_SECRET: "jwt-secret",
+          };
+          return values[key];
+        });
+
+        jwtServiceMock.verifyAsync.mockRejectedValue(new Error("bad token"));
+
+        await expect(authService.refresh("invalid-token")).rejects.toThrow(
+          new UnauthorizedException("Invalid refresh token"),
+        );
+        expect(prismaServiceMock.user.findUnique).not.toHaveBeenCalled();
+      });
     });
   });
 });

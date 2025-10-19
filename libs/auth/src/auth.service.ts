@@ -47,16 +47,7 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    return {
-      id: user.id,
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-      role: user.role,
-      phone: user.phone ?? null,
-      teamId: user.teamId ?? null,
-      companyId: user.companyId,
-    } satisfies AuthenticatedUser;
+    return this.toAuthenticatedUser(user);
   }
 
   async login(loginDto: LoginDto) {
@@ -96,6 +87,107 @@ export class AuthService {
     };
   }
 
+  async refresh(refreshToken: string) {
+    const jwtSecret = this.configService.get<string>("JWT_SECRET");
+    if (jwtSecret == null) {
+      throw new Error("JWT_SECRET is not configured");
+    }
+
+    const refreshTokenSecret =
+      this.configService.get<string>("JWT_REFRESH_SECRET") ?? jwtSecret;
+
+    let payload: JwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+        secret: refreshTokenSecret,
+      });
+    } catch {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    const userRecord = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        role: true,
+        phone: true,
+        teamId: true,
+        companyId: true,
+      },
+    });
+
+    if (userRecord == null) {
+      throw new UnauthorizedException("User no longer exists");
+    }
+
+    const user = this.toAuthenticatedUser(userRecord);
+
+    const refreshedPayload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    } satisfies JwtPayload;
+
+    const accessToken = await this.jwtService.signAsync(refreshedPayload);
+    const accessTokenExpiresAt = this.getTokenExpiration(accessToken);
+
+    const refreshTokenExpiresIn =
+      this.configService.get<string>("JWT_REFRESH_EXPIRES_IN") ?? "7d";
+
+    const newRefreshToken = await this.jwtService.signAsync(refreshedPayload, {
+      secret: refreshTokenSecret,
+      expiresIn: refreshTokenExpiresIn as JwtSignOptions["expiresIn"],
+    });
+    const refreshTokenExpiresAt = this.getTokenExpiration(newRefreshToken);
+
+    return {
+      accessToken,
+      accessTokenExpiresAt,
+      refreshToken: newRefreshToken,
+      refreshTokenExpiresAt,
+      user,
+    };
+  }
+
+  getTokenInfo(token: string): {
+    issuedAt: string | null;
+    expiresAt: string | null;
+    payload: {
+      sub: number | null;
+      email: string | null;
+      role: AuthenticatedUser["role"] | null;
+    };
+  } | null {
+    const decoded: unknown = this.jwtService.decode(token);
+    if (decoded == null || typeof decoded !== "object") {
+      return null;
+    }
+
+    const claims = decoded as Partial<JwtPayload> & {
+      exp?: unknown;
+      iat?: unknown;
+    };
+
+    return {
+      issuedAt:
+        typeof claims.iat === "number"
+          ? new Date(claims.iat * 1000).toISOString()
+          : null,
+      expiresAt:
+        typeof claims.exp === "number"
+          ? new Date(claims.exp * 1000).toISOString()
+          : null,
+      payload: {
+        sub: typeof claims.sub === "number" ? claims.sub : null,
+        email: typeof claims.email === "string" ? claims.email : null,
+        role: typeof claims.role === "string" ? claims.role : null,
+      },
+    };
+  }
+
   private getTokenExpiration(token: string): string | null {
     const decoded: unknown = this.jwtService.decode(token);
     if (decoded == null || typeof decoded !== "object") {
@@ -108,5 +200,27 @@ export class AuthService {
     }
 
     return new Date(exp * 1000).toISOString();
+  }
+
+  private toAuthenticatedUser(user: {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+    role: AuthenticatedUser["role"];
+    phone: string | null;
+    teamId: number | null;
+    companyId: number;
+  }): AuthenticatedUser {
+    return {
+      id: user.id,
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      role: user.role,
+      phone: user.phone ?? null,
+      teamId: user.teamId ?? null,
+      companyId: user.companyId,
+    } satisfies AuthenticatedUser;
   }
 }
