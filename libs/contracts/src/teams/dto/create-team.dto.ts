@@ -1,4 +1,12 @@
+import { Type } from "class-transformer";
+import { IsInt, IsNotEmpty, IsString } from "class-validator";
+
 export class CreateTeamDto {
-  name: string;
-  companyId: number;
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  companyId!: number;
 }

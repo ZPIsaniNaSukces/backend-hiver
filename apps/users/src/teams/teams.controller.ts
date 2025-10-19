@@ -4,7 +4,7 @@ import {
   UpdateTeamDto,
 } from "@app/contracts/teams";
 
-import { Controller, ParseIntPipe } from "@nestjs/common";
+import { BadRequestException, Controller, ParseIntPipe } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { TeamsService } from "./teams.service";
@@ -29,8 +29,13 @@ export class TeamsController {
   }
 
   @MessagePattern(TeamsMessageTopic.UPDATE)
-  async update(@Payload(ParseIntPipe) updateTeamDto: UpdateTeamDto) {
-    return await this.teamsService.update(updateTeamDto.id, updateTeamDto);
+  async update(@Payload() updateTeamDto: UpdateTeamDto) {
+    const { id } = updateTeamDto;
+    if (id == null) {
+      throw new BadRequestException("id is required");
+    }
+
+    return await this.teamsService.update(id, updateTeamDto);
   }
 
   @MessagePattern(TeamsMessageTopic.REMOVE)
