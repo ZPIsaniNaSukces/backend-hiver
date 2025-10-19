@@ -8,25 +8,26 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /usr/src/app
-COPY package.json package-lock.json ./ 
+COPY package.json package-lock.json ./
 RUN npm ci
+COPY prisma ./prisma   
 COPY . .
+RUN npx prisma generate
 RUN npm run build ${APP}
+RUN npm prune --omit=dev
+
 
 # production stage
 FROM base AS production
 ARG APP
 ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
 WORKDIR /usr/src/app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+ENV NODE_ENV=${NODE_ENV}
+ENV APP_NAME=${APP}
+COPY --from=development /usr/src/app/node_modules ./node_modules
+COPY --from=development /usr/src/app/prisma ./prisma
 COPY --from=development /usr/src/app/dist ./dist
 
-# Add an env to save ARG
-ENV APP_MAIN_FILE=dist/apps/${APP}/main
-# CMD ["node", "${APP_MAIN_FILE}"]
-
-# użycie shell form
-CMD node $APP_MAIN_FILE
+# defaults to compiled Nest entry file for the selected app
+ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
+CMD sh -c "npx prisma db push --skip-generate && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
