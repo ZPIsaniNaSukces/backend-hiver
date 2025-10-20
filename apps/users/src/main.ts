@@ -1,3 +1,5 @@
+import { PrismaExceptionFilter } from "@app/prisma";
+
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { Transport } from "@nestjs/microservices";
@@ -26,6 +28,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   await app.listen();
 }
