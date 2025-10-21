@@ -1,4 +1,6 @@
+import { Roles } from "@app/auth";
 import { CreateTeamDto, UpdateTeamDto } from "@app/contracts/teams";
+import { USER_ROLE } from "@prisma/client";
 
 import {
   Body,
@@ -6,7 +8,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
 } from "@nestjs/common";
@@ -18,6 +19,7 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Post()
+  @Roles(USER_ROLE.ADMIN)
   async create(@Body() createTeamDto: CreateTeamDto) {
     return this.teamsService.create(createTeamDto);
   }
@@ -28,21 +30,20 @@ export class TeamsController {
   }
 
   @Get(":id")
-  async findOne(@Param("id", ParseIntPipe) id: number) {
+  async findOne(@Param("id") id: number) {
     return this.teamsService.findOne(id);
   }
 
   @Patch(":id")
-  async update(
-    @Param("id", ParseIntPipe) id: number,
-    @Body() updateTeamDto: UpdateTeamDto,
-  ) {
+  @Roles(USER_ROLE.ADMIN)
+  async update(@Param("id") id: number, @Body() updateTeamDto: UpdateTeamDto) {
     updateTeamDto.id = id;
     return this.teamsService.update(id, updateTeamDto);
   }
 
   @Delete(":id")
-  async remove(@Param("id", ParseIntPipe) id: number) {
+  @Roles(USER_ROLE.ADMIN)
+  async remove(@Param("id") id: number) {
     return this.teamsService.remove(id);
   }
 }
