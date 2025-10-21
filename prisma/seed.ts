@@ -12,10 +12,8 @@ const hashPassword = async (raw: string) => {
 async function main() {
   console.warn("Start seeding ...");
 
-  // Clear existing data (simple, deterministic seed)
-  await prisma.user.deleteMany();
-  await prisma.team.deleteMany();
-  await prisma.company.deleteMany();
+  // Clear existing data and restart auto-incrementing identifiers for deterministic seeding
+  await prisma.$executeRaw`TRUNCATE TABLE "User", "Team", "Company" RESTART IDENTITY CASCADE`;
 
   // Basic companies
   const companiesData: { name: string; domain?: string }[] = [

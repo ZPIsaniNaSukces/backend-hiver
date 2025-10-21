@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3004
-@userId = 9
+@userId = 1
 @teamId = 1
-@companyId = 3
+@companyId = 1
 
 ### Login as Admin
 # @name login
