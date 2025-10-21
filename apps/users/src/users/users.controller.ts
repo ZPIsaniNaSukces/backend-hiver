@@ -1,45 +1,53 @@
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UsersMessageTopic,
-} from "@app/contracts/users";
+import { Roles } from "@app/auth";
+import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
+import { USER_ROLE } from "@prisma/client";
 
-import { BadRequestException, Controller, ParseIntPipe } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from "@nestjs/common";
 
 import { UsersService } from "./users.service";
 
-@Controller()
+@Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @MessagePattern(UsersMessageTopic.CREATE)
-  async create(@Payload() createUserDto: CreateUserDto) {
+  @Post()
+  @Roles(USER_ROLE.ADMIN)
+  async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }
 
-  @MessagePattern(UsersMessageTopic.FIND_ALL)
+  @Get()
   async findAll() {
     return await this.usersService.findAll();
   }
 
-  @MessagePattern(UsersMessageTopic.FIND_ONE)
-  async findOne(@Payload(ParseIntPipe) id: number) {
+  @Get(":id")
+  async findOne(@Param("id") id: number) {
     return await this.usersService.findOne(id);
   }
 
-  @MessagePattern(UsersMessageTopic.UPDATE)
-  async update(@Payload() updateUserDto: UpdateUserDto) {
-    const { id } = updateUserDto;
-    if (id == null) {
-      throw new BadRequestException("id is required");
-    }
-
+  @Patch(":id")
+  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  async update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    updateUserDto.id = id;
     return await this.usersService.update(id, updateUserDto);
   }
 
-  @MessagePattern(UsersMessageTopic.REMOVE)
-  async remove(@Payload(ParseIntPipe) id: number) {
+  @Delete(":id")
+  @Roles(USER_ROLE.ADMIN)
+  async remove(@Param("id", ParseIntPipe) id: number) {
     return await this.usersService.remove(id);
   }
 }
