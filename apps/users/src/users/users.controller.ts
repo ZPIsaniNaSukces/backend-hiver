@@ -8,7 +8,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
 } from "@nestjs/common";
@@ -37,17 +36,14 @@ export class UsersController {
 
   @Patch(":id")
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
-  async update(
-    @Param("id", ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
+  async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
     updateUserDto.id = id;
     return await this.usersService.update(id, updateUserDto);
   }
 
   @Delete(":id")
   @Roles(USER_ROLE.ADMIN)
-  async remove(@Param("id", ParseIntPipe) id: number) {
+  async remove(@Param("id") id: number) {
     return await this.usersService.remove(id);
   }
 }

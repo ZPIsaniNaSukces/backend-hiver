@@ -42,4 +42,3 @@ model User {
   team      Team?     @relation(fields: [teamId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   company   Company   @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
-

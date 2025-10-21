@@ -5,6 +5,7 @@ import { Module } from "@nestjs/common";
 
 import { CompaniesModule } from "./companies/companies.module";
 import { TeamsModule } from "./teams/teams.module";
+import { UsersAppController } from "./users-app.controller";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -15,7 +16,7 @@ import { UsersModule } from "./users/users.module";
     CompaniesModule,
     AuthModule,
   ],
-  controllers: [],
+  controllers: [UsersAppController],
   providers: [],
 })
 export class UsersAppModule {}
