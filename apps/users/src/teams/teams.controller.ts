@@ -1,45 +1,48 @@
-import {
-  CreateTeamDto,
-  TeamsMessageTopic,
-  UpdateTeamDto,
-} from "@app/contracts/teams";
+import { CreateTeamDto, UpdateTeamDto } from "@app/contracts/teams";
 
-import { BadRequestException, Controller, ParseIntPipe } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from "@nestjs/common";
 
 import { TeamsService } from "./teams.service";
 
-@Controller()
+@Controller("teams")
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
-  @MessagePattern(TeamsMessageTopic.CREATE)
-  async create(@Payload() createTeamDto: CreateTeamDto) {
-    return await this.teamsService.create(createTeamDto);
+  @Post()
+  async create(@Body() createTeamDto: CreateTeamDto) {
+    return this.teamsService.create(createTeamDto);
   }
 
-  @MessagePattern(TeamsMessageTopic.FIND_ALL)
+  @Get()
   async findAll() {
-    return await this.teamsService.findAll();
+    return this.teamsService.findAll();
   }
 
-  @MessagePattern(TeamsMessageTopic.FIND_ONE)
-  async findOne(@Payload(ParseIntPipe) id: number) {
-    return await this.teamsService.findOne(id);
+  @Get(":id")
+  async findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.teamsService.findOne(id);
   }
 
-  @MessagePattern(TeamsMessageTopic.UPDATE)
-  async update(@Payload() updateTeamDto: UpdateTeamDto) {
-    const { id } = updateTeamDto;
-    if (id == null) {
-      throw new BadRequestException("id is required");
-    }
-
-    return await this.teamsService.update(id, updateTeamDto);
+  @Patch(":id")
+  async update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateTeamDto: UpdateTeamDto,
+  ) {
+    updateTeamDto.id = id;
+    return this.teamsService.update(id, updateTeamDto);
   }
 
-  @MessagePattern(TeamsMessageTopic.REMOVE)
-  async remove(@Payload(ParseIntPipe) id: number) {
-    return await this.teamsService.remove(id);
+  @Delete(":id")
+  async remove(@Param("id", ParseIntPipe) id: number) {
+    return this.teamsService.remove(id);
   }
 }

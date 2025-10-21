@@ -8,17 +8,16 @@ import type { MicroserviceOptions } from "@nestjs/microservices";
 import { UsersAppModule } from "./users-app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    UsersAppModule,
-    {
-      transport: Transport.KAFKA,
-      options: {
-        client: {
-          brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
-        },
+  const app = await NestFactory.create(UsersAppModule);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
       },
     },
-  );
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,6 +30,8 @@ async function bootstrap() {
 
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  await app.listen();
+  await app.startAllMicroservices();
+  await app.listen(process.env.PORT ?? 3000);
 }
+
 void bootstrap();
