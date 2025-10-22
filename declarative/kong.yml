@@ -1,8 +1,65 @@
 _format_version: "3.0"
+_transform: true
+
 services:
-  - name: example-service
-    url: http://httpbin.org
+  - name: users-service
+    host: users
+    port: 3000
+    protocol: http
     routes:
-      - name: example-route
+      - name: users-route
         paths:
-          - /anything
+          - /users
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        strip_path: false
+      - name: teams-route
+        paths:
+          - /teams
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        strip_path: false
+      - name: companies-route
+        paths:
+          - /companies
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        strip_path: false
+      - name: auth-route
+        paths:
+          - /auth
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+        strip_path: false
+      - name: users-app-health
+        paths:
+          - /users-app/health
+        methods:
+          - GET
+        strip_path: false
+
+plugins:
+  - name: cors
+    config:
+      origins: ["*"]
+      methods: [GET, POST, PATCH, PUT, DELETE, OPTIONS]
+      headers: [Authorization, Content-Type]
+      credentials: false
+      max_age: 3600

@@ -45,26 +45,6 @@ services:
       retries: 5
       start_period: 10s
 
-  # api-gateway:
-  #   container_name: api-gateway
-  #   build:
-  #     context: .
-  #     args:
-  #       - APP=api-gateway
-  #   restart: always
-  #   ports:
-  #     - "3004:3000"
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     USERS_SERVICE_HOST: users
-  #     USERS_SERVICE_PORT: 3001
-  #     DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver
-  #     KAFKA_BROKER: kafka:9092
-  #   depends_on:
-  #     - kafka
-  #     - postgres
-
   users:
     container_name: users
     build:
@@ -72,28 +52,33 @@ services:
       args:
         - APP=users
     restart: always
+    networks:
+      - hiver-net
     env_file:
       - .env
     environment:
       USERS_SERVICE_HOST: 0.0.0.0
-      USERS_SERVICE_PORT: 3004
+      PORT: 3000
       DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
 
   kong-dbless:
     image: kong:latest
     container_name: kong
-    read_only: true
     restart: unless-stopped
     networks:
       - hiver-net
     volumes:
-      - ./declarative:/kong/declarative/
+      - ./declarative:/kong/declarative/:ro
+    tmpfs:
+      - /kong/run
     environment:
-      KONG_PREFIX: /var/run/kong
+      KONG_PREFIX: /kong/run
       KONG_DATABASE: off
       KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
@@ -110,7 +95,7 @@ services:
       - users
 
 networks:
-  default:
+  hiver-net:
     name: hiver-net
 
 volumes:
