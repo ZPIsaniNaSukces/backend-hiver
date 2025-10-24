@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3004
+@baseUrl = http://localhost:8000
 @userId = 1
 @teamId = 1
 @companyId = 1
