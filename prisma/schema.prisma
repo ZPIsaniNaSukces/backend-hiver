@@ -13,6 +13,12 @@ enum USER_ROLE {
   EMPLOYEE
 }
 
+enum LEAVE_STATUS {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Company {
   id         Int        @id @default(autoincrement())
   name   String
@@ -47,4 +53,28 @@ model User {
 
   // Many-to-many relation: a user can be a member of many teams
   teams        Team[]
+}
+
+// Leave Requests Microservice Models
+model LeaveRequestUserInfo {
+  id      Int     @id
+  name    String
+  surname String
+  bossId  Int?
+
+  LeaveRequest LeaveRequest[]
+  approvedRequests LeaveRequest[] @relation("LeaveRequestApprover")
+}
+
+model LeaveRequest {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  startsAt   DateTime
+  endsAt     DateTime
+  reason     String
+  status     LEAVE_STATUS
+  approvedById Int?
+
+  user       LeaveRequestUserInfo @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvedBy LeaveRequestUserInfo? @relation("LeaveRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
