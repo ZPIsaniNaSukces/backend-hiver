@@ -1,8 +1,11 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { JwtAuthGuard, RolesGuard } from "@app/auth";
+
+import { Controller, Get, Param, UseGuards } from "@nestjs/common";
 
 import { CompaniesService } from "./companies.service";
 
 @Controller("companies")
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
