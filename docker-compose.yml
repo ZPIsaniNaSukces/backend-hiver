@@ -54,8 +54,6 @@ services:
     restart: always
     networks:
       - hiver-net
-    # ports:
-    #   - "3000:3000"
     env_file:
       - .env
     environment:
@@ -73,12 +71,13 @@ services:
     image: kong:latest
     container_name: kong
     restart: unless-stopped
+    user: "root"
     networks:
       - hiver-net
     volumes:
-      - ./declarative:/kong/declarative/:ro
+      - ./kong.yml:/kong/declarative/kong.yml:ro
     tmpfs:
-      - /kong/run
+      - /kong/run:exec,mode=777
     environment:
       KONG_PREFIX: /kong/run
       KONG_DATABASE: off
@@ -95,7 +94,7 @@ services:
       - "8443:8443"
       - "8001:8001"
       - "8444:8444"
-    depends_on: #add more microservices in the future when created
+    depends_on: # add more microservices in the future when created
       - users
 
 networks:
