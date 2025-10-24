@@ -9,6 +9,7 @@ import type { JwtSignOptions } from "@nestjs/jwt";
 import type { LoginDto } from "./dto/login.dto";
 import type { AuthenticatedUser } from "./interfaces/authenticated-user.type";
 import type { JwtPayload } from "./interfaces/jwt-payload.interface";
+import { toAuthenticatedUserResponse } from "./utils/to-authenticated-user-response";
 
 @Injectable()
 export class AuthService {
@@ -48,7 +49,7 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    return this.toAuthenticatedUser(user);
+    return toAuthenticatedUserResponse(user);
   }
 
   async login(loginDto: LoginDto) {
@@ -125,7 +126,7 @@ export class AuthService {
       throw new UnauthorizedException("User no longer exists");
     }
 
-    const user = this.toAuthenticatedUser(userRecord);
+    const user = toAuthenticatedUserResponse(userRecord);
 
     const refreshedPayload: JwtPayload = {
       sub: user.id,
@@ -202,29 +203,5 @@ export class AuthService {
     }
 
     return new Date(exp * 1000).toISOString();
-  }
-
-  private toAuthenticatedUser(user: {
-    id: number;
-    name: string;
-    surname: string;
-    email: string;
-    role: AuthenticatedUser["role"];
-    phone: string | null;
-    bossId: number | null;
-    companyId: number;
-    teams: { id: number }[];
-  }): AuthenticatedUser {
-    return {
-      id: user.id,
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-      role: user.role,
-      phone: user.phone ?? null,
-      bossId: user.bossId ?? null,
-      teamIds: user.teams.map((t) => t.id),
-      companyId: user.companyId,
-    } satisfies AuthenticatedUser;
   }
 }
