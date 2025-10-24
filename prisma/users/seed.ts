@@ -13,7 +13,7 @@ async function main() {
   console.warn("Start seeding ...");
 
   // Clear existing data and restart auto-incrementing identifiers for deterministic seeding
-  await prisma.$executeRaw`TRUNCATE TABLE "User", "Team", "Company" RESTART IDENTITY CASCADE`;
+  await prisma.$executeRaw`TRUNCATE TABLE "User", "Team", "Company", "LeaveRequest" RESTART IDENTITY CASCADE`;
 
   // Basic companies
   const companiesData: { name: string; domain?: string }[] = [

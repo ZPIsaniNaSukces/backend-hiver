@@ -100,6 +100,33 @@ services:
           - GET
         strip_path: false
 
+  - name: leave-requests-service
+    host: leave-requests
+    port: 3001
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 0
+    routes:
+      - name: leave-requests-route
+        paths:
+          - /leave-requests
+        methods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        strip_path: false
+      - name: leave-requests-app-health
+        paths:
+          - /leave-requests-app/health
+        methods:
+          - GET
+        strip_path: false
+
 plugins:
   - name: cors
     config:
