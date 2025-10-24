@@ -88,6 +88,28 @@ services:
       kafka:
         condition: service_started
 
+  leave-requests:
+    container_name: leave-requests
+    build:
+      context: .
+      args:
+        - APP=leave-requests
+    restart: always
+    networks:
+      - hiver-net
+    env_file:
+      - .env
+    environment:
+      LEAVE_REQUESTS_SERVICE_HOST: 0.0.0.0
+      PORT: 3002
+      LEAVE_REQUESTS_DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_leave_requests
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
   kong-dbless:
     image: kong:latest
     container_name: kong
@@ -115,9 +137,13 @@ services:
       - "8443:8443"
       - "8001:8001"
       - "8444:8444"
-    depends_on: # add more microservices in the future when created
-      - users
-      - presence
+    depends_on:
+      users:
+        condition: service_healthy
+      presence:
+        condition: service_started
+      leave-requests:
+        condition: service_started
 
 networks:
   hiver-net:
