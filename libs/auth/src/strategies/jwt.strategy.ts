@@ -7,6 +7,7 @@ import { PassportStrategy } from "@nestjs/passport";
 
 import type { AuthenticatedUser } from "../interfaces/authenticated-user.type";
 import type { JwtPayload } from "../interfaces/jwt-payload.interface";
+import { toAuthenticatedUserResponse } from "../utils/to-authenticated-user-response";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -41,23 +42,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException("User no longer exists");
     }
 
-    const bossId: number | null =
-      (user as { bossId: number | null }).bossId ?? null;
-    const teamIds: number[] = Array.isArray(
-      (user as { teams?: { id: number }[] }).teams,
-    )
-      ? (user as { teams: { id: number }[] }).teams.map((t) => t.id)
-      : [];
-    return {
-      id: user.id,
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-      role: user.role,
-      phone: user.phone ?? null,
-      bossId,
-      teamIds,
-      companyId: user.companyId,
-    } satisfies AuthenticatedUser;
+    return toAuthenticatedUserResponse(user);
   }
 }

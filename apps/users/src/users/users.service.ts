@@ -1,4 +1,5 @@
 import type { AuthenticatedUser } from "@app/auth";
+import { toAuthenticatedUserResponse } from "@app/auth";
 import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
 import type { Prisma } from "@prisma/client";
@@ -9,33 +10,6 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
-
-  private toAuthenticatedUser(user: {
-    id: number;
-    name: string;
-    surname: string;
-    email: string;
-    role: AuthenticatedUser["role"];
-    phone: string | null;
-    bossId: number | null;
-    companyId: number;
-    teams: { id: number }[];
-    password?: string;
-  }): AuthenticatedUser {
-    const { password: _password, ...rest } = user;
-    const bossId: number | null = rest.bossId ?? null;
-    return {
-      id: rest.id,
-      name: rest.name,
-      surname: rest.surname,
-      email: rest.email,
-      role: rest.role,
-      phone: rest.phone ?? null,
-      bossId,
-      teamIds: user.teams.map((t) => t.id),
-      companyId: rest.companyId,
-    };
-  }
 
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
@@ -66,14 +40,14 @@ export class UsersService {
       data,
       include: { teams: { select: { id: true } } },
     });
-    return this.toAuthenticatedUser(user);
+    return toAuthenticatedUserResponse(user);
   }
 
   async findAll(): Promise<AuthenticatedUser[]> {
     const users = await this.prisma.user.findMany({
       include: { teams: { select: { id: true } } },
     });
-    return users.map((user) => this.toAuthenticatedUser(user));
+    return users.map((user) => toAuthenticatedUserResponse(user));
   }
 
   async findOne(id: number): Promise<AuthenticatedUser | null> {
@@ -84,7 +58,7 @@ export class UsersService {
     if (user == null) {
       return null;
     }
-    return this.toAuthenticatedUser(user);
+    return toAuthenticatedUserResponse(user);
   }
 
   async update(
@@ -128,7 +102,7 @@ export class UsersService {
       include: { teams: { select: { id: true } } },
     });
 
-    return this.toAuthenticatedUser(user);
+    return toAuthenticatedUserResponse(user);
   }
 
   async remove(id: number): Promise<AuthenticatedUser> {
@@ -136,6 +110,6 @@ export class UsersService {
       where: { id },
       include: { teams: { select: { id: true } } },
     });
-    return this.toAuthenticatedUser(user);
+    return toAuthenticatedUserResponse(user);
   }
 }
