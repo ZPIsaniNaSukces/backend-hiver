@@ -1,7 +1,7 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
-import type { Prisma, User } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import { Injectable } from "@nestjs/common";
@@ -10,13 +10,29 @@ import { Injectable } from "@nestjs/common";
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toAuthenticatedUser(user: User): AuthenticatedUser {
+  private toAuthenticatedUser(user: {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+    role: AuthenticatedUser["role"];
+    phone: string | null;
+    bossId: number | null;
+    companyId: number;
+    teams: { id: number }[];
+    password?: string;
+  }): AuthenticatedUser {
     const { password: _password, ...rest } = user;
-
+    const bossId: number | null = rest.bossId ?? null;
     return {
-      ...rest,
+      id: rest.id,
+      name: rest.name,
+      surname: rest.surname,
+      email: rest.email,
+      role: rest.role,
       phone: rest.phone ?? null,
-      teamId: rest.teamId ?? null,
+      bossId,
+      teamIds: user.teams.map((t) => t.id),
       companyId: rest.companyId,
     };
   }
@@ -24,31 +40,47 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
-    const data: Prisma.UserUncheckedCreateInput = {
+    const data: Prisma.UserUncheckedCreateInput & {
+      teams?: { connect: { id: number }[] };
+    } = {
       name: createUserDto.name,
       surname: createUserDto.surname,
       email: createUserDto.email,
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
       role: createUserDto.role,
-      teamId:
-        createUserDto.teamId != null && createUserDto.teamId > 0
-          ? createUserDto.teamId
+      bossId:
+        createUserDto.bossId != null && createUserDto.bossId > 0
+          ? createUserDto.bossId
           : null,
       companyId: createUserDto.companyId,
     };
 
-    const user = await this.prisma.user.create({ data });
+    if (createUserDto.teamIds != null && createUserDto.teamIds.length > 0) {
+      data.teams = {
+        connect: createUserDto.teamIds.map((teamId) => ({ id: teamId })),
+      };
+    }
+
+    const user = await this.prisma.user.create({
+      data,
+      include: { teams: { select: { id: true } } },
+    });
     return this.toAuthenticatedUser(user);
   }
 
   async findAll(): Promise<AuthenticatedUser[]> {
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      include: { teams: { select: { id: true } } },
+    });
     return users.map((user) => this.toAuthenticatedUser(user));
   }
 
   async findOne(id: number): Promise<AuthenticatedUser | null> {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { teams: { select: { id: true } } },
+    });
     if (user == null) {
       return null;
     }
@@ -64,16 +96,18 @@ export class UsersService {
         ? undefined
         : await bcrypt.hash(updateUserDto.password, 12);
 
-    const data: Prisma.UserUncheckedUpdateInput = {
+    const data: Prisma.UserUncheckedUpdateInput & {
+      teams?: { set?: { id: number }[]; connect?: { id: number }[] };
+    } = {
       name: updateUserDto.name,
       surname: updateUserDto.surname,
       email: updateUserDto.email,
       password: hashedPassword,
       phone: updateUserDto.phone ?? null,
       role: updateUserDto.role,
-      teamId:
-        updateUserDto.teamId != null && updateUserDto.teamId > 0
-          ? updateUserDto.teamId
+      bossId:
+        updateUserDto.bossId != null && updateUserDto.bossId > 0
+          ? updateUserDto.bossId
           : null,
       companyId:
         updateUserDto.companyId != null && updateUserDto.companyId > 0
@@ -81,16 +115,27 @@ export class UsersService {
           : undefined,
     };
 
+    if (updateUserDto.teamIds != null) {
+      data.teams = {
+        set: [],
+        connect: updateUserDto.teamIds.map((teamId) => ({ id: teamId })),
+      };
+    }
+
     const user = await this.prisma.user.update({
       where: { id },
       data,
+      include: { teams: { select: { id: true } } },
     });
 
     return this.toAuthenticatedUser(user);
   }
 
   async remove(id: number): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.delete({ where: { id } });
+    const user = await this.prisma.user.delete({
+      where: { id },
+      include: { teams: { select: { id: true } } },
+    });
     return this.toAuthenticatedUser(user);
   }
 }

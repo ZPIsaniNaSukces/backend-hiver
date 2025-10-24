@@ -7,6 +7,7 @@ export interface AuthenticatedUser {
   email: string;
   role: USER_ROLE;
   phone: string | null;
-  teamId: number | null;
-  companyId: number | null;
+  bossId: number | null;
+  teamIds: number[];
+  companyId: number;
 }

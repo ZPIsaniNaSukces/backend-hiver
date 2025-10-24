@@ -1,6 +1,7 @@
 import { USER_ROLE } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsInt,
@@ -35,7 +36,13 @@ export class CreateUserDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  teamId?: number;
+  bossId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  teamIds?: number[];
 
   @Type(() => Number)
   @IsInt()

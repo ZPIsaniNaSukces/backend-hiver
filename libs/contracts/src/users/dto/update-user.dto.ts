@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional } from "class-validator";
+import { IsArray, IsInt, IsOptional } from "class-validator";
 
 import { PartialType } from "@nestjs/mapped-types";
 
@@ -10,4 +10,9 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @Type(() => Number)
   @IsInt()
   id?: number;
+
+  // Allow explicit clearing of teams by providing an empty array
+  @IsOptional()
+  @IsArray()
+  teamIds?: number[];
 }

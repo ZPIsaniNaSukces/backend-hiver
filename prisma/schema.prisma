@@ -26,6 +26,7 @@ model Team {
   name      String
   companyId Int
   company   Company  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Many-to-many members
   users     User[]
 }
 
@@ -37,8 +38,13 @@ model User {
   password  String
   phone     String?
   role      USER_ROLE
-  teamId    Int?
   companyId Int
-  team      Team?     @relation(fields: [teamId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   company   Company   @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Self-relation for boss/subordinates
+  bossId       Int?
+  boss         User?     @relation("UserBoss", fields: [bossId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  subordinates User[]    @relation("UserBoss")
+
+  // Many-to-many relation: a user can be a member of many teams
+  teams        Team[]
 }

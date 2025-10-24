@@ -32,8 +32,9 @@ export class AuthService {
         password: true,
         role: true,
         phone: true,
-        teamId: true,
+        bossId: true,
         companyId: true,
+        teams: { select: { id: true } },
       },
     });
 
@@ -114,8 +115,9 @@ export class AuthService {
         email: true,
         role: true,
         phone: true,
-        teamId: true,
+        bossId: true,
         companyId: true,
+        teams: { select: { id: true } },
       },
     });
 
@@ -209,8 +211,9 @@ export class AuthService {
     email: string;
     role: AuthenticatedUser["role"];
     phone: string | null;
-    teamId: number | null;
+    bossId: number | null;
     companyId: number;
+    teams: { id: number }[];
   }): AuthenticatedUser {
     return {
       id: user.id,
@@ -219,7 +222,8 @@ export class AuthService {
       email: user.email,
       role: user.role,
       phone: user.phone ?? null,
-      teamId: user.teamId ?? null,
+      bossId: user.bossId ?? null,
+      teamIds: user.teams.map((t) => t.id),
       companyId: user.companyId,
     } satisfies AuthenticatedUser;
   }
