@@ -90,7 +90,12 @@ async function main() {
         password: hashed,
         role: u.role,
         companyId: company.id,
-        teamId: team?.id ?? null,
+        teams:
+          team === undefined
+            ? undefined
+            : {
+                connect: [{ id: team.id }],
+              },
       },
     });
   }

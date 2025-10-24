@@ -42,8 +42,9 @@ describe("AuthService", () => {
     password: "hashedPassword",
     role: USER_ROLE.ADMIN,
     phone: "123456789",
-    teamId: 2,
+    bossId: null,
     companyId: 3,
+    teams: [{ id: 2 }],
   } as const;
 
   let authService: AuthService;
@@ -95,7 +96,8 @@ describe("AuthService", () => {
         email: validUserRecord.email,
         role: validUserRecord.role,
         phone: validUserRecord.phone,
-        teamId: validUserRecord.teamId,
+        bossId: validUserRecord.bossId,
+        teamIds: [2],
         companyId: validUserRecord.companyId,
       });
       expect(bcryptCompareMock).toHaveBeenCalledWith(
@@ -172,7 +174,8 @@ describe("AuthService", () => {
           email: validUserRecord.email,
           role: validUserRecord.role,
           phone: validUserRecord.phone,
-          teamId: validUserRecord.teamId,
+          bossId: validUserRecord.bossId,
+          teamIds: [2],
           companyId: validUserRecord.companyId,
         },
       });
@@ -266,7 +269,8 @@ describe("AuthService", () => {
             email: validUserRecord.email,
             role: validUserRecord.role,
             phone: validUserRecord.phone,
-            teamId: validUserRecord.teamId,
+            bossId: validUserRecord.bossId,
+            teamIds: [2],
             companyId: validUserRecord.companyId,
           },
         });
