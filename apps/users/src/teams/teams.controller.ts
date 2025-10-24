@@ -1,4 +1,4 @@
-import { Roles } from "@app/auth";
+import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
 import { CreateTeamDto, UpdateTeamDto } from "@app/contracts/teams";
 import { USER_ROLE } from "@prisma/client";
 
@@ -10,11 +10,13 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from "@nestjs/common";
 
 import { TeamsService } from "./teams.service";
 
 @Controller("teams")
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
