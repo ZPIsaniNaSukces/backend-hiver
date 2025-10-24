@@ -3,6 +3,8 @@ services:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     restart: always
+    networks:
+      - hiver-net
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -11,6 +13,8 @@ services:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     restart: always
+    networks:
+      - hiver-net
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -26,6 +30,8 @@ services:
     image: postgres:15-alpine
     container_name: postgres
     restart: always
+    networks:
+      - hiver-net
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -46,18 +52,55 @@ services:
       args:
         - APP=users
     restart: always
-    ports:
-      - "3004:3000"
+    networks:
+      - hiver-net
+    # ports:
+    #   - "3000:3000"
     env_file:
       - .env
     environment:
       USERS_SERVICE_HOST: 0.0.0.0
-      USERS_SERVICE_PORT: 3004
+      PORT: 3000
       DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  kong-dbless:
+    image: kong:latest
+    container_name: kong
+    restart: unless-stopped
+    networks:
+      - hiver-net
+    volumes:
+      - ./declarative:/kong/declarative/:ro
+    tmpfs:
+      - /kong/run
+    environment:
+      KONG_PREFIX: /kong/run
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_DNS_VALID_TTL: 10
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    depends_on: #add more microservices in the future when created
+      - users
+
+networks:
+  hiver-net:
+    name: hiver-net
 
 volumes:
   postgres-data:
