@@ -30,4 +30,4 @@ COPY --from=development /usr/src/app/dist ./dist
 
 # defaults to compiled Nest entry file for the selected app
 ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
-CMD sh -c "npx prisma db push --skip-generate && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
+CMD sh -c "npx prisma db push --skip-generate --accept-data-loss && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
