@@ -28,6 +28,7 @@ COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/prisma ./prisma
 COPY --from=development /usr/src/app/dist ./dist
 
+#TODO REMOVE ACCEPT DATA LOSS, ITS ONLY FOR DEV!!
 # defaults to compiled Nest entry file for the selected app
 ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
-CMD sh -c "npx prisma db push --skip-generate && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
+CMD sh -c "npx prisma db push --skip-generate --accept-data-loss && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
