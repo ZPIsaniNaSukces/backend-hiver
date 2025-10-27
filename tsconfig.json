@@ -24,10 +24,12 @@
     "paths": {
       "@app/auth": ["libs/auth/src"],
       "@app/auth/*": ["libs/auth/src/*"],
+      "@app/contracts": ["libs/contracts/src"],
+      "@app/contracts/*": ["libs/contracts/src/*"],
       "@app/prisma": ["libs/prisma/src"],
       "@app/prisma/*": ["libs/prisma/src/*"],
-      "@app/contracts": ["libs/contracts/src"],
-      "@app/contracts/*": ["libs/contracts/src/*"]
+      "@app/utils": ["libs/utils/src"],
+      "@app/utils/*": ["libs/utils/src/*"]
     }
   }
 }
