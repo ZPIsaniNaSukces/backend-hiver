@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsInt, IsOptional } from "class-validator";
+import { IsArray, IsBoolean, IsInt, IsOptional } from "class-validator";
 
 import { PartialType } from "@nestjs/mapped-types";
 
@@ -15,4 +15,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsArray()
   teamIds?: number[];
+
+  @IsOptional()
+  @IsBoolean()
+  isFirstLogin?: boolean;
 }

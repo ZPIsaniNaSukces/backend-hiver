@@ -35,6 +35,7 @@ export class AuthService {
         phone: true,
         bossId: true,
         companyId: true,
+        isFirstLogin: true,
         teams: { select: { id: true } },
       },
     });
@@ -54,6 +55,10 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
+
+    if (user.role == null) {
+      throw new UnauthorizedException("User role is not set");
+    }
 
     const payload: JwtPayload = {
       sub: user.id,
@@ -118,6 +123,7 @@ export class AuthService {
         phone: true,
         bossId: true,
         companyId: true,
+        isFirstLogin: true,
         teams: { select: { id: true } },
       },
     });
@@ -127,6 +133,10 @@ export class AuthService {
     }
 
     const user = toAuthenticatedUserResponse(userRecord);
+
+    if (user.role == null) {
+      throw new UnauthorizedException("User role is not set");
+    }
 
     const refreshedPayload: JwtPayload = {
       sub: user.id,

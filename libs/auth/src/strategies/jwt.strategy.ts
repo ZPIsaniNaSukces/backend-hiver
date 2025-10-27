@@ -34,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         phone: true,
         bossId: true,
         companyId: true,
+        isFirstLogin: true,
         teams: { select: { id: true } },
       },
     });

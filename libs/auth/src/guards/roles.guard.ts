@@ -34,6 +34,10 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException("User is not authenticated");
     }
 
+    if (user.role == null) {
+      throw new ForbiddenException("User role is not set");
+    }
+
     if (!requiredRoles.includes(user.role)) {
       throw new ForbiddenException("Insufficient permissions");
     }
