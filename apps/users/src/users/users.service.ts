@@ -1,14 +1,18 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { toAuthenticatedUserResponse } from "@app/auth";
+import type { RegistrationResult } from "@app/contracts/users";
 import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
+import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import { Injectable } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
@@ -17,8 +21,8 @@ export class UsersService {
     const data: Prisma.UserUncheckedCreateInput & {
       teams?: { connect: { id: number }[] };
     } = {
-      name: createUserDto.name,
-      surname: createUserDto.surname,
+      name: createUserDto.name ?? null,
+      surname: createUserDto.surname ?? null,
       email: createUserDto.email,
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
@@ -87,6 +91,7 @@ export class UsersService {
         updateUserDto.companyId != null && updateUserDto.companyId > 0
           ? updateUserDto.companyId
           : undefined,
+      isFirstLogin: updateUserDto.isFirstLogin,
     };
 
     if (updateUserDto.teamIds != null) {
@@ -111,5 +116,42 @@ export class UsersService {
       include: { teams: { select: { id: true } } },
     });
     return toAuthenticatedUserResponse(user);
+  }
+
+  async register(
+    email: string,
+    companyId: number,
+    bossId: number,
+  ): Promise<RegistrationResult> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser !== null) {
+      return {
+        success: false,
+        message: "User with this email already exists.",
+      };
+    }
+
+    const randomPassword = generatePassword();
+
+    const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+    await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        companyId,
+        bossId,
+        role: "EMPLOYEE",
+      },
+    });
+    this.logger.debug(
+      `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
+    );
+
+    return { success: true, message: "User registered successfully." };
+    //TODO: Send email with the generated password to user
   }
 }

@@ -29,6 +29,19 @@ Content-Type: application/json
   "refreshToken": "{{refreshToken}}"
 }
 
+### Register user
+# @name register
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "email": "alice.new123@acme.com",
+  "companyId": {{companyId}},
+  "bossId": {{userId}}
+}
+
+
 ### Get current user
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{accessToken}}

@@ -1,5 +1,10 @@
-import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
-import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
+import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import type { RegistrationResult } from "@app/contracts/users";
+import {
+  CreateUserDto,
+  RegisterUserDto,
+  UpdateUserDto,
+} from "@app/contracts/users";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -24,6 +29,19 @@ export class UsersController {
   @Roles(USER_ROLE.ADMIN)
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
+  }
+
+  @Post("register")
+  @Roles(USER_ROLE.ADMIN)
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+    @CurrentUser("id") authUserId: number,
+  ): Promise<RegistrationResult> {
+    return await this.usersService.register(
+      registerUserDto.email,
+      registerUserDto.companyId,
+      registerUserDto.bossId ?? authUserId,
+    );
   }
 
   @Get()
