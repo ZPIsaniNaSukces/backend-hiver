@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/notifications-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NOTIFICATIONS_DATABASE_URL")
+}
+
+enum NOTIFICATION_TYPE {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NOTIFICATION_STATUS {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+}
+
+model NotificationUserInfo {
+  id        Int     @id
+  email     String?
+  phone     String?
+  companyId Int
+
+  // FCM push notification tokens
+  pushTokens String[]
+
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        Int                 @id @default(autoincrement())
+  userId    Int
+  type      NOTIFICATION_TYPE
+  status    NOTIFICATION_STATUS @default(PENDING)
+  subject   String?
+  message   String
+  metadata  Json?
+
+  // Error details if failed
+  errorMessage String?
+
+  // Tracking
+  sentAt      DateTime?
+  deliveredAt DateTime?
+
+  user NotificationUserInfo @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([type, status])
+  @@index([createdAt])
+}
+
+model NotificationTemplate {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  type        NOTIFICATION_TYPE
+  subject     String?
+  template    String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
