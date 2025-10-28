@@ -168,6 +168,34 @@ services:
       retries: 5
       start_period: 30s
 
+  notifications:
+    container_name: notifications
+    build:
+      context: .
+      args:
+        - APP=notifications
+    restart: always
+    networks:
+      - hiver-net
+    env_file:
+      - .env
+    environment:
+      NOTIFICATIONS_SERVICE_HOST: 0.0.0.0
+      PORT: 3005
+      NOTIFICATIONS_DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_notifications
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "netstat -an | grep 3005 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   kong-dbless:
     image: kong:latest
     container_name: kong
@@ -203,6 +231,8 @@ services:
       requests:
         condition: service_healthy
       tasks:
+        condition: service_healthy
+      notifications:
         condition: service_healthy
 
 networks:

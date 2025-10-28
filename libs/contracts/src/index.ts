@@ -4,3 +4,4 @@ export * from "./companies";
 export * from "./checkin";
 export * from "./nfc-tags";
 export * from "./requests";
+export * from "./notifications";
