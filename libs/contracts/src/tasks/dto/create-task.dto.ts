@@ -1,15 +1,17 @@
-import { IsDate, IsNotEmpty, IsOptional } from "class-validator";
+import { Type } from "class-transformer";
+import { IsDate, IsInt, IsOptional } from "class-validator";
 
 export class CreateTaskDto {
   @IsDate()
   @IsOptional()
-  dueDate?: string;
+  @Type(() => Date)
+  dueDate?: Date;
 
-  @IsDate()
-  @IsNotEmpty()
-  createdAt: string;
+  @IsInt()
+  @IsOptional()
+  reporterId?: number;
 
-  @IsDate()
-  @IsNotEmpty()
-  updatedAt: string;
+  @IsInt()
+  @IsOptional()
+  assigneeId?: number;
 }
