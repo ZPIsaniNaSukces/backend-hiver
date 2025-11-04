@@ -1,6 +1,7 @@
 import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
 import type { RegistrationResult } from "@app/contracts/users";
 import {
+  CompleteRegistrationDto,
   CreateUserDto,
   RegisterUserDto,
   UpdateUserDto,
@@ -59,6 +60,21 @@ export class UsersController {
   async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
     updateUserDto.id = id;
     return await this.usersService.update(id, updateUserDto);
+  }
+
+  @Patch(":id/complete-registration")
+  async completeRegistration(
+    @Param("id") id: number,
+    @Body() completeRegistrationDto: CompleteRegistrationDto,
+    @CurrentUser("id") authUserId: number,
+  ) {
+    if (id !== authUserId) {
+      throw new Error("You can only complete your own registration");
+    }
+    return await this.usersService.completeRegistration(
+      id,
+      completeRegistrationDto,
+    );
   }
 
   @Delete(":id")

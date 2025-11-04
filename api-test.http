@@ -41,6 +41,18 @@ Authorization: Bearer {{accessToken}}
   "bossId": {{userId}}
 }
 
+### Complete registration (for first-time login)
+# User completes their registration after first login with generated password
+PATCH {{baseUrl}}/users/{{userId}}/complete-registration
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Alice",
+  "surname": "NewUser",
+  "phone": "+11234567890",
+  "password": "MyNewPassword123!"
+}
 
 ### Get current user
 GET {{baseUrl}}/auth/me

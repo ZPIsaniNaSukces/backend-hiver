@@ -1,14 +1,17 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { toAuthenticatedUserResponse } from "@app/auth";
 import type { RegistrationResult } from "@app/contracts/users";
-import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
+import {
+  CompleteRegistrationDto,
+  CreateUserDto,
+  UpdateUserDto,
+} from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
 import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
-import { Injectable } from "@nestjs/common";
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 
 @Injectable()
 export class UsersService {
@@ -145,6 +148,7 @@ export class UsersService {
         companyId,
         bossId,
         role: "EMPLOYEE",
+        isFirstLogin: true,
       },
     });
     this.logger.debug(
@@ -152,6 +156,39 @@ export class UsersService {
     );
 
     return { success: true, message: "User registered successfully." };
-    //TODO: Send email with the generated password to user
+    //TODO:send email with the generated password to user
+  }
+
+  async completeRegistration(
+    userId: number,
+    completeRegistrationDto: CompleteRegistrationDto,
+  ): Promise<AuthenticatedUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user == null) {
+      throw new NotFoundException("User not found");
+    }
+
+    //hash new password if provided
+    const hashedPassword =
+      completeRegistrationDto.password === undefined
+        ? undefined
+        : await bcrypt.hash(completeRegistrationDto.password, 12);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: completeRegistrationDto.name,
+        surname: completeRegistrationDto.surname,
+        phone: completeRegistrationDto.phone ?? null,
+        password: hashedPassword,
+        isFirstLogin: false,
+      },
+      include: { teams: { select: { id: true } } },
+    });
+
+    return toAuthenticatedUserResponse(updatedUser);
   }
 }
