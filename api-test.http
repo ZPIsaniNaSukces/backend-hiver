@@ -36,21 +36,50 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "email": "alice.new123@acme.com",
+  "email": "alice.new456@acme.com",
   "companyId": {{companyId}},
   "bossId": {{userId}}
 }
 
+###
+# Capture the temporary password from registration response
+@newUserEmail = alice.new456@acme.com
+@tempPassword = {{register.response.body.temporaryPassword}}
+
+### Login as newly registered user with temporary password
+# @name loginNewUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{newUserEmail}}",
+  "password": "{{tempPassword}}"
+}
+
+###
+@newUserAccessToken = {{loginNewUser.response.body.accessToken}}
+@newUserId = {{loginNewUser.response.body.user.id}}
+
 ### Complete registration (for first-time login)
 # User completes their registration after first login with generated password
-PATCH {{baseUrl}}/users/{{userId}}/complete-registration
+PATCH {{baseUrl}}/users/{{newUserId}}/complete-registration
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{newUserAccessToken}}
 
 {
   "name": "Alice",
   "surname": "NewUser",
   "phone": "+11234567890",
+  "password": "MyNewPassword123!"
+}
+
+### Verify complete registration - login with new password
+# @name loginAfterComplete
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{newUserEmail}}",
   "password": "MyNewPassword123!"
 }
 

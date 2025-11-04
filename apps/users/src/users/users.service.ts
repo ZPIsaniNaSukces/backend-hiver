@@ -155,8 +155,12 @@ export class UsersService {
       `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
     );
 
-    return { success: true, message: "User registered successfully." };
     //TODO:send email with the generated password to user
+    return {
+      success: true,
+      message: "User registered successfully.",
+      temporaryPassword: randomPassword,
+    };
   }
 
   async completeRegistration(
