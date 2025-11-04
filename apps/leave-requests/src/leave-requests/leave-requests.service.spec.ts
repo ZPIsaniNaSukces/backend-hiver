@@ -1,3 +1,7 @@
+import type {
+  UserCreatedEventDto,
+  UserUpdatedEventDto,
+} from "@app/contracts/users";
 import { PrismaService } from "@app/prisma";
 
 import type { TestingModule } from "@nestjs/testing";
@@ -15,6 +19,10 @@ describe("LeaveRequestsService", () => {
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    leaveRequestUserInfo: {
+      create: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -37,5 +45,29 @@ describe("LeaveRequestsService", () => {
   it("should be defined", () => {
     expect(service).toBeDefined();
     expect(prismaService).toBeDefined();
+  });
+
+  it("creates LeaveRequestUserInfo on user created event", async () => {
+    const payload: UserCreatedEventDto = { id: 10, bossId: 3, companyId: 1 };
+    const created = { id: 10, bossId: 3, companyId: 1, availableLeaveDays: 20 };
+    prismaServiceMock.leaveRequestUserInfo.create.mockResolvedValue(created);
+
+    const result = await service.handleUserCreated(payload);
+    expect(prismaServiceMock.leaveRequestUserInfo.create).toHaveBeenCalledWith({
+      data: { id: 10, bossId: 3, companyId: 1, availableLeaveDays: 20 },
+    });
+    expect(result).toEqual(created);
+  });
+
+  it("updates LeaveRequestUserInfo on user updated event", async () => {
+    const payload: UserUpdatedEventDto = { id: 10, bossId: null, companyId: 2 };
+    prismaServiceMock.leaveRequestUserInfo.update.mockResolvedValue({});
+
+    await service.handleUserUpdated(payload);
+
+    expect(prismaServiceMock.leaveRequestUserInfo.update).toHaveBeenCalledWith({
+      where: { id: 10 },
+      data: { bossId: null, companyId: 2 },
+    });
   });
 });

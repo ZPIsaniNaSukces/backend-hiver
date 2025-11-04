@@ -1,8 +1,10 @@
 import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import { UsersMessageTopic } from "@app/contracts";
 import {
   CreateLeaveRequestDto,
   UpdateLeaveRequestDto,
 } from "@app/contracts/leave-requests";
+import { UserCreatedEventDto, UserUpdatedEventDto } from "@app/contracts/users";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -15,6 +17,7 @@ import {
   Post,
   UseGuards,
 } from "@nestjs/common";
+import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { LeaveRequestsService } from "./leave-requests.service";
 
@@ -53,5 +56,28 @@ export class LeaveRequestsController {
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
   async remove(@Param("id") id: number) {
     return await this.leaveRequestsService.remove(id);
+  }
+
+  @Post(":id/approve")
+  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  async approve(@Param("id") id: number) {
+    return await this.leaveRequestsService.approve(id);
+  }
+
+  @Post(":id/reject")
+  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  async reject(@Param("id") id: number) {
+    return await this.leaveRequestsService.reject(id);
+  }
+
+  // React to user lifecycle events from the Users service
+  @MessagePattern(UsersMessageTopic.CREATE)
+  async userCreated(@Payload() event: UserCreatedEventDto) {
+    return await this.leaveRequestsService.handleUserCreated(event);
+  }
+
+  @MessagePattern(UsersMessageTopic.UPDATE)
+  async userUpdated(@Payload() event: UserUpdatedEventDto) {
+    return await this.leaveRequestsService.handleUserUpdated(event);
   }
 }
