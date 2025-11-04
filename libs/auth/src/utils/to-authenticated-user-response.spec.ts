@@ -15,6 +15,7 @@ describe("toAuthenticatedUserResponse", () => {
       companyId: 7,
       teams: [{ id: 1 }, { id: 2 }],
       password: "should-be-ignored",
+      isFirstLogin: false,
     });
 
     expect(result).toEqual({
@@ -27,6 +28,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: 3,
       teamIds: [1, 2],
       companyId: 7,
+      isFirstLogin: false,
     });
     expect(
       (result as unknown as Record<string, unknown>).password,
@@ -44,6 +46,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: null,
       companyId: 5,
       teams: [],
+      isFirstLogin: true,
     });
 
     expect(result).toEqual({
@@ -56,6 +59,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: null,
       teamIds: [],
       companyId: 5,
+      isFirstLogin: true,
     });
   });
 });
