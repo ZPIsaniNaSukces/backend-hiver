@@ -11,7 +11,7 @@ import { UsersService } from "../users/users.service";
     PrismaModule,
     ClientsModule.register([
       {
-        name: "USERS_SERVICE",
+        name: "USERS_KAFKA",
         transport: Transport.KAFKA,
         options: {
           client: {
@@ -21,6 +21,7 @@ import { UsersService } from "../users/users.service";
           consumer: {
             groupId: "users-service-consumer",
           },
+          producer: { allowAutoTopicCreation: true },
         },
       },
     ]),

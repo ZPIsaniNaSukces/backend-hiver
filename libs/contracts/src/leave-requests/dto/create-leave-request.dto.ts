@@ -30,5 +30,5 @@ export class CreateLeaveRequestDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  approvedBy?: number;
+  approvedById?: number;
 }
