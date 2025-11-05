@@ -13,6 +13,12 @@ enum USER_ROLE {
   EMPLOYEE
 }
 
+enum ACCOUNT_STATUS {
+  UNVERIFIED
+  VERIFIED
+  SUSPENDED
+}
+
 model Company {
   id         Int        @id @default(autoincrement())
   name   String
@@ -40,7 +46,7 @@ model User {
   role         USER_ROLE
   companyId    Int
   company      Company  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  isFirstLogin Boolean      @default(false)
+  accountStatus ACCOUNT_STATUS @default(VERIFIED)
   // Self-relation for boss/subordinates
   bossId       Int?
   boss         User?     @relation("UserBoss", fields: [bossId], references: [id], onDelete: SetNull, onUpdate: NoAction)

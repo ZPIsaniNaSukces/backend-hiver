@@ -94,7 +94,7 @@ export class UsersService {
         updateUserDto.companyId != null && updateUserDto.companyId > 0
           ? updateUserDto.companyId
           : undefined,
-      isFirstLogin: updateUserDto.isFirstLogin,
+      accountStatus: updateUserDto.accountStatus,
     };
 
     if (updateUserDto.teamIds != null) {
@@ -148,7 +148,7 @@ export class UsersService {
         companyId,
         bossId,
         role: "EMPLOYEE",
-        isFirstLogin: true,
+        accountStatus: "UNVERIFIED",
       },
     });
     this.logger.debug(
@@ -188,7 +188,7 @@ export class UsersService {
         surname: completeRegistrationDto.surname,
         phone: completeRegistrationDto.phone ?? null,
         password: hashedPassword,
-        isFirstLogin: false,
+        accountStatus: "VERIFIED",
       },
       include: { teams: { select: { id: true } } },
     });

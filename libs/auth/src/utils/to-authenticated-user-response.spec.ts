@@ -1,4 +1,4 @@
-import { USER_ROLE } from "@prisma/client";
+import { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 
 import { toAuthenticatedUserResponse } from "./to-authenticated-user-response";
 
@@ -15,7 +15,7 @@ describe("toAuthenticatedUserResponse", () => {
       companyId: 7,
       teams: [{ id: 1 }, { id: 2 }],
       password: "should-be-ignored",
-      isFirstLogin: false,
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
 
     expect(result).toEqual({
@@ -28,7 +28,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: 3,
       teamIds: [1, 2],
       companyId: 7,
-      isFirstLogin: false,
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
     expect(
       (result as unknown as Record<string, unknown>).password,
@@ -46,7 +46,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: null,
       companyId: 5,
       teams: [],
-      isFirstLogin: true,
+      accountStatus: ACCOUNT_STATUS.UNVERIFIED,
     });
 
     expect(result).toEqual({
@@ -59,7 +59,7 @@ describe("toAuthenticatedUserResponse", () => {
       bossId: null,
       teamIds: [],
       companyId: 5,
-      isFirstLogin: true,
+      accountStatus: ACCOUNT_STATUS.UNVERIFIED,
     });
   });
 });

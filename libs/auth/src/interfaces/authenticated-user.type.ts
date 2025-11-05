@@ -1,4 +1,4 @@
-import type { USER_ROLE } from "@prisma/client";
+import type { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 
 export type AuthenticatedUser = {
   id: number;
@@ -10,5 +10,5 @@ export type AuthenticatedUser = {
   bossId: number | null;
   teamIds: number[];
   companyId: number;
-  isFirstLogin: boolean;
+  accountStatus: ACCOUNT_STATUS;
 };

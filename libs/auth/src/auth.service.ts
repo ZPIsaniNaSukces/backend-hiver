@@ -35,7 +35,7 @@ export class AuthService {
         phone: true,
         bossId: true,
         companyId: true,
-        isFirstLogin: true,
+        accountStatus: true,
         teams: { select: { id: true } },
       },
     });
@@ -123,7 +123,7 @@ export class AuthService {
         phone: true,
         bossId: true,
         companyId: true,
-        isFirstLogin: true,
+        accountStatus: true,
         teams: { select: { id: true } },
       },
     });

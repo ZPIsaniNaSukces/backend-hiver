@@ -12,7 +12,7 @@ export interface UserWithTeamsForAuth {
   companyId: number;
   teams: { id: number }[];
   password?: string | null;
-  isFirstLogin: boolean;
+  accountStatus: AuthenticatedUser["accountStatus"];
 }
 
 export function toAuthenticatedUserResponse(
@@ -30,6 +30,6 @@ export function toAuthenticatedUserResponse(
     bossId,
     teamIds: user.teams.map((t) => t.id),
     companyId: user.companyId,
-    isFirstLogin: user.isFirstLogin,
+    accountStatus: user.accountStatus,
   } satisfies AuthenticatedUser;
 }
