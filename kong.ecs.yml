@@ -3,10 +3,8 @@ _transform: true
 
 services:
   - name: users-service
-    # AWS ECS Service Discovery DNS: {service-name}.{namespace}
-    # In docker-compose: just "users"
-    # In ECS: "users.hiver-dev.local" (set by SERVICE_DISCOVERY_NAMESPACE env var or default)
-    host: users
+    # ECS Service Discovery DNS format: service-name.namespace
+    host: users.hiver-dev.local
     port: 3000
     protocol: http
     connect_timeout: 60000
