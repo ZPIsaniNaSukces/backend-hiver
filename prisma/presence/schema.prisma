@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/presence-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRESENCE_DATABASE_URL")
+}
+
+enum CheckinType {
+  NFC
+  ONLINE
+  OFFLINE
+}
+
+enum CheckinDirection {
+  IN
+  OUT
+}
+
+model NfcTag {
+  id        Int       @id @default(autoincrement())
+  uid       String    @unique
+  name      String
+  companyId Int
+  aesKey    String
+
+  checkins  Checkin[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CheckinUserInfo {
+  userId    Int @id
+  companyId Int
+
+  checkins  Checkin[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Checkin {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  companyId Int
+  type      CheckinType
+  direction CheckinDirection
+  timestamp DateTime         @default(now())
+  counter   Int?
+  signature String?
+  tagId     Int?
+
+  userInfo CheckinUserInfo @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  tag      NfcTag?         @relation(fields: [tagId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, timestamp])
+  @@index([companyId, timestamp])
+}
+
+
+

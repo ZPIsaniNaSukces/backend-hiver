@@ -45,6 +45,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/users/tsconfig.app.json"
       }
+    },
+    "presence": {
+      "type": "application",
+      "root": "apps/presence",
+      "entryFile": "main",
+      "sourceRoot": "apps/presence/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/presence/tsconfig.app.json"
+      }
     }
   }
 }
