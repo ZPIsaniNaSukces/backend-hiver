@@ -27,7 +27,11 @@
       "@app/prisma": ["libs/prisma/src"],
       "@app/prisma/*": ["libs/prisma/src/*"],
       "@app/contracts": ["libs/contracts/src"],
-      "@app/contracts/*": ["libs/contracts/src/*"]
+      "@app/contracts/*": ["libs/contracts/src/*"],
+      "@generated/presence": ["generated/prisma/presence-client"],
+      "@generated/presence/*": ["generated/prisma/presence-client/*"],
+      "@generated/users": ["generated/prisma/users-client"],
+      "@generated/users/*": ["generated/prisma/users-client/*"]
     }
   }
 }
