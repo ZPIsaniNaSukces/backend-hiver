@@ -29,7 +29,9 @@
       "@app/prisma": ["libs/prisma/src"],
       "@app/prisma/*": ["libs/prisma/src/*"],
       "@app/utils": ["libs/utils/src"],
-      "@app/utils/*": ["libs/utils/src/*"]
+      "@app/utils/*": ["libs/utils/src/*"],
+      "@app/mail": ["libs/mail/src"],
+      "@app/mail/*": ["libs/mail/src/*"]
     }
   }
 }

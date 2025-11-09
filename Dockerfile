@@ -14,6 +14,7 @@ COPY prisma ./prisma
 COPY . .
 RUN npx prisma generate
 RUN npm run build ${APP}
+RUN npm prune --omit=dev --exclude=nodemailer --exclude=@nestjs-modules/mailer
 
 
 # production stage
@@ -30,6 +31,7 @@ COPY --from=development /usr/src/app/prisma ./prisma
 RUN npx prisma generate
 
 COPY --from=development /usr/src/app/dist ./dist
+COPY --from=development /usr/src/app/libs/mail/src/templates ./libs/mail/src/templates
 
 #run migrations and start app
 ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main

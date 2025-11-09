@@ -6,6 +6,7 @@ import {
   CreateUserDto,
   UpdateUserDto,
 } from "@app/contracts/users";
+import { MailService } from "@app/mail";
 import { PrismaService } from "@app/prisma";
 import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
@@ -16,7 +17,10 @@ import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
@@ -155,7 +159,18 @@ export class UsersService {
       `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
     );
 
-    //TODO:send email with the generated password to user
+    try {
+      await this.mailService.sendWelcomeEmail(email, randomPassword);
+      this.logger.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to send welcome email to ${email}, but user was created. Error: ${errorMessage}`,
+      );
+      //what if email fails? what do we do
+    }
+
     return {
       success: true,
       message: "User registered successfully.",

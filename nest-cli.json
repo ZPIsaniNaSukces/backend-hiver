@@ -5,7 +5,13 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/users/tsconfig.app.json"
+    "tsConfigPath": "apps/users/tsconfig.app.json",
+    "assets": [
+      {
+        "include": "libs/mail/src/templates/**/*",
+        "outDir": "dist/libs/mail/src"
+      }
+    ]
   },
   "monorepo": true,
   "root": "apps/users",
@@ -35,6 +41,15 @@
       "sourceRoot": "libs/prisma/src",
       "compilerOptions": {
         "tsConfigPath": "libs/prisma/tsconfig.lib.json"
+      }
+    },
+    "mail": {
+      "type": "library",
+      "root": "libs/mail",
+      "entryFile": "index",
+      "sourceRoot": "libs/mail/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mail/tsconfig.lib.json"
       }
     },
     "users": {

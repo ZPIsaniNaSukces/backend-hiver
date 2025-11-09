@@ -36,7 +36,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "email": "alice.new456@acme.com",
+  "email": "alice.new456@acme.com", #your real email here for testing
   "companyId": {{companyId}},
   "bossId": {{userId}}
 }
