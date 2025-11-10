@@ -155,10 +155,11 @@ export class UsersService {
         accountStatus: "UNVERIFIED",
       },
     });
-    this.logger.debug(
-      `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
-    );
-
+    if (process.env.ENVIRONMENT_TYPE === "development") {
+      this.logger.debug(
+        `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
+      );
+    }
     try {
       await this.mailService.sendWelcomeEmail(email, randomPassword);
       this.logger.log(`Welcome email sent to ${email}`);
@@ -174,7 +175,10 @@ export class UsersService {
     return {
       success: true,
       message: "User registered successfully.",
-      temporaryPassword: randomPassword,
+      temporaryPassword:
+        process.env.ENVIRONMENT_TYPE === "development"
+          ? randomPassword
+          : undefined, //TODO: remove temporary password from response in production
     };
   }
 
