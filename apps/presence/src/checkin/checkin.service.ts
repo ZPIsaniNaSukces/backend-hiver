@@ -1,4 +1,5 @@
 import type { AuthenticatedUser } from "@app/auth";
+import { CheckinCheckoutDto } from "@app/contracts";
 import { CheckinDirection, CheckinType } from "@generated/presence";
 import { USER_ROLE } from "@prisma/client";
 
@@ -9,7 +10,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { CheckinCheckoutDto } from "../../../../libs/contracts/src/checkin/dto/checkin-checkout.dto";
 import { NfcTagsService } from "../nfc-tags/nfc-tags.service";
 import {
   PRESENCE_PRISMA,
@@ -18,8 +18,8 @@ import {
 
 export interface CheckinStatusResponse {
   status: "success" | "error" | "idle";
-  czyWejscieCzyWyjscie: CheckinDirection | null;
-  godzinaOdklikniecia: string | null;
+  checkinDirection: CheckinDirection | null;
+  checkInTime: string | null;
 }
 
 @Injectable()
@@ -103,8 +103,8 @@ export class CheckinService {
 
     return {
       status: "success",
-      czyWejscieCzyWyjscie: nextDirection,
-      godzinaOdklikniecia: currentTimestamp.toISOString(),
+      checkinDirection: nextDirection,
+      checkInTime: currentTimestamp.toISOString(),
     } satisfies CheckinStatusResponse;
   }
 
@@ -142,15 +142,15 @@ export class CheckinService {
     if (lastCheckin == null) {
       return {
         status: "idle",
-        czyWejscieCzyWyjscie: null,
-        godzinaOdklikniecia: null,
+        checkinDirection: null,
+        checkInTime: null,
       } satisfies CheckinStatusResponse;
     }
 
     return {
       status: "success",
-      czyWejscieCzyWyjscie: lastCheckin.direction,
-      godzinaOdklikniecia: lastCheckin.timestamp.toISOString(),
+      checkinDirection: lastCheckin.direction,
+      checkInTime: lastCheckin.timestamp.toISOString(),
     } satisfies CheckinStatusResponse;
   }
 }
