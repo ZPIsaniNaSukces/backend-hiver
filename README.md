@@ -80,7 +80,24 @@ Each service has its own Prisma schema and generated client for complete data is
    npm run prisma:migrate:presence
    ```
 
-6. Run the microservices:
+6. (Optional) Seed development data:
+
+   ```bash
+   npm run prisma:seed
+   ```
+
+   This will populate both databases with sample data:
+   - **Users DB**: Companies (Acme Corp, Globex), Teams, and Users (Alice Admin, Martin Manager, Eve Employee)
+   - **Presence DB**: CheckinUserInfo, NFC Tags, and sample check-in records
+
+   Or seed individually:
+
+   ```bash
+   npm run prisma:seed:users
+   npm run prisma:seed:presence
+   ```
+
+7. Run the microservices:
 
    ```bash
    # Users service (Kafka microservice)

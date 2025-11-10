@@ -20,11 +20,11 @@ export class CheckinUserInfoService {
     private readonly prisma: PresencePrismaClient,
   ) {}
 
-  async upsert(userId: number, companyId: number) {
+  async upsert(userId: number, bossId: number | null, companyId: number) {
     return await this.prisma.checkinUserInfo.upsert({
       where: { userId },
-      create: { userId, companyId },
-      update: { companyId },
+      create: { userId, bossId, companyId },
+      update: { bossId, companyId },
     });
   }
 
