@@ -80,4 +80,9 @@ export class LeaveRequestsController {
   async userUpdated(@Payload() event: UserUpdatedEventDto) {
     await this.leaveRequestsService.handleUserUpdated(event);
   }
+
+  @MessagePattern(UsersMessageTopic.REMOVE)
+  async userRemoved(@Payload() event: { id: number }) {
+    await this.leaveRequestsService.handleUserRemoved(event.id);
+  }
 }
