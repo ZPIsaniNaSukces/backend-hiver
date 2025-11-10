@@ -2,16 +2,15 @@ import type {
   UserCreatedEventDto,
   UserUpdatedEventDto,
 } from "@app/contracts/users";
-import { PrismaService } from "@app/prisma";
 
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 
+import { LEAVE_REQUESTS_PRISMA } from "../prisma/prisma.constants";
 import { LeaveRequestsService } from "./leave-requests.service";
 
 describe("LeaveRequestsService", () => {
   let service: LeaveRequestsService;
-  let prismaService: PrismaService;
   const prismaServiceMock = {
     leaveRequest: {
       create: jest.fn(),
@@ -23,7 +22,9 @@ describe("LeaveRequestsService", () => {
     leaveRequestUserInfo: {
       create: jest.fn(),
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -32,19 +33,17 @@ describe("LeaveRequestsService", () => {
       providers: [
         LeaveRequestsService,
         {
-          provide: PrismaService,
+          provide: LEAVE_REQUESTS_PRISMA,
           useValue: prismaServiceMock,
         },
       ],
     }).compile();
 
     service = module.get<LeaveRequestsService>(LeaveRequestsService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it("should be defined", () => {
     expect(service).toBeDefined();
-    expect(prismaService).toBeDefined();
   });
 
   it("creates LeaveRequestUserInfo on user created event", async () => {

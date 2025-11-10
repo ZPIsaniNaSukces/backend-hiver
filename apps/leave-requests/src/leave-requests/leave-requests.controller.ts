@@ -78,6 +78,6 @@ export class LeaveRequestsController {
 
   @MessagePattern(UsersMessageTopic.UPDATE)
   async userUpdated(@Payload() event: UserUpdatedEventDto) {
-    return await this.leaveRequestsService.handleUserUpdated(event);
+    await this.leaveRequestsService.handleUserUpdated(event);
   }
 }

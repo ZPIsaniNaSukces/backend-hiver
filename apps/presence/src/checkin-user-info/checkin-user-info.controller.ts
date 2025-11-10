@@ -43,7 +43,7 @@ export class CheckinUserInfoController {
     );
     await this.checkinUserInfoService.upsert(
       data.id,
-      data.bossId,
+      data.bossId ?? null,
       data.companyId,
     );
   }

@@ -51,7 +51,9 @@
     "moduleNameMapper": {
       "^@app/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
       "^@app/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1",
-      "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1"
+      "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
+      "^@generated/presence(|/.*)$": "<rootDir>/generated/prisma/presence-client/$1",
+      "^@generated/leave-requests(|/.*)$": "<rootDir>/generated/prisma/leave-requests-client/$1"
     },
     "rootDir": ".",
     "roots": [

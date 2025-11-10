@@ -95,7 +95,7 @@ export class LeaveRequestsService {
       endsAt,
       reason: createLeaveRequestDto.reason,
       status: createLeaveRequestDto.status,
-      approvedBy: createLeaveRequestDto.approvedById ?? null,
+      approvedById: createLeaveRequestDto.approvedById ?? null,
     };
 
     const created = await this.prisma.$transaction(async (tx) => {
@@ -138,7 +138,7 @@ export class LeaveRequestsService {
           : new Date(updateLeaveRequestDto.endsAt),
       reason: updateLeaveRequestDto.reason,
       status: updateLeaveRequestDto.status,
-      approvedBy: updateLeaveRequestDto.approvedById ?? null,
+      approvedById: updateLeaveRequestDto.approvedById ?? null,
     };
 
     return await this.prisma.leaveRequest.update({
