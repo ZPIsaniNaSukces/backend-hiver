@@ -4,13 +4,10 @@ import {
   UpdateLeaveRequestDto,
 } from "@app/contracts/leave-requests";
 import { UserCreatedEventDto, UserUpdatedEventDto } from "@app/contracts/users";
+import type { LeaveRequest, Prisma } from "@generated/leave-requests";
 
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 
-import type {
-  LeaveRequest,
-  Prisma,
-} from "../../../../generated/prisma/leave-requests-client";
 import {
   LEAVE_REQUESTS_PRISMA,
   LeaveRequestsPrismaClient,
@@ -216,6 +213,12 @@ export class LeaveRequestsService {
     await lruUpdater.update({
       where: { id: event.id },
       data,
+    });
+  }
+
+  async handleUserRemoved(userId: number): Promise<void> {
+    await this.prisma.leaveRequestUserInfo.delete({
+      where: { id: userId },
     });
   }
 }
