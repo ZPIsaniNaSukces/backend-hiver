@@ -1,14 +1,12 @@
-import { PrismaService } from "@app/prisma";
-
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 
+import { LEAVE_REQUESTS_PRISMA } from "../prisma/prisma.constants";
 import { LeaveRequestsController } from "./leave-requests.controller";
 import { LeaveRequestsService } from "./leave-requests.service";
 
 describe("LeaveRequestsController", () => {
   let controller: LeaveRequestsController;
-  let prismaService: PrismaService;
   const prismaServiceMock = {
     leaveRequest: {
       create: jest.fn(),
@@ -17,6 +15,12 @@ describe("LeaveRequestsController", () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    leaveRequestUserInfo: {
+      create: jest.fn(),
+      update: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -26,18 +30,16 @@ describe("LeaveRequestsController", () => {
       providers: [
         LeaveRequestsService,
         {
-          provide: PrismaService,
+          provide: LEAVE_REQUESTS_PRISMA,
           useValue: prismaServiceMock,
         },
       ],
     }).compile();
 
     controller = module.get<LeaveRequestsController>(LeaveRequestsController);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it("should be defined", () => {
     expect(controller).toBeDefined();
-    expect(prismaService).toBeDefined();
   });
 });
