@@ -4,14 +4,24 @@ import {
   UpdateLeaveRequestDto,
 } from "@app/contracts/leave-requests";
 import { UserCreatedEventDto, UserUpdatedEventDto } from "@app/contracts/users";
-import { PrismaService } from "@app/prisma";
-import type { LeaveRequest, Prisma } from "@prisma/client";
 
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+
+import type {
+  LeaveRequest,
+  Prisma,
+} from "../../../../generated/prisma/leave-requests-client";
+import {
+  LEAVE_REQUESTS_PRISMA,
+  LeaveRequestsPrismaClient,
+} from "../prisma/prisma.constants";
 
 @Injectable()
 export class LeaveRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(LEAVE_REQUESTS_PRISMA)
+    private readonly prisma: LeaveRequestsPrismaClient,
+  ) {}
 
   private calculateLeaveDays(startsAt: Date, endsAt: Date): number {
     // Normalize to midnight to avoid partial day issues

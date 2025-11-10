@@ -14,7 +14,11 @@ async function bootstrap() {
     transport: Transport.KAFKA,
     options: {
       client: {
+        clientId: "leave-requests-service",
         brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
+      },
+      consumer: {
+        groupId: "leave-requests-service-consumer",
       },
     },
   });
@@ -31,7 +35,7 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaExceptionFilter());
 
   await app.startAllMicroservices();
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(process.env.PORT ?? 3002);
 }
 
 void bootstrap();
