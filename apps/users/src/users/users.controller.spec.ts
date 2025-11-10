@@ -19,6 +19,13 @@ describe("UsersController", () => {
     },
   };
 
+  const kafkaClientMock = {
+    emit: jest.fn(),
+    send: jest.fn(),
+    connect: jest.fn(),
+    close: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
@@ -28,6 +35,10 @@ describe("UsersController", () => {
         {
           provide: PrismaService,
           useValue: prismaServiceMock,
+        },
+        {
+          provide: "USERS_SERVICE",
+          useValue: kafkaClientMock,
         },
       ],
     }).compile();

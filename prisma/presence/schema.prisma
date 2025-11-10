@@ -33,7 +33,8 @@ model NfcTag {
 }
 
 model CheckinUserInfo {
-  userId    Int @id
+  userId    Int  @id
+  bossId    Int?
   companyId Int
 
   checkins  Checkin[]
@@ -62,6 +63,3 @@ model Checkin {
   @@index([userId, timestamp])
   @@index([companyId, timestamp])
 }
-
-
-
