@@ -87,6 +87,16 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3001/presence-app/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   leave-requests:
     container_name: leave-requests
@@ -109,6 +119,16 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3002/leave-requests-app/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   kong-dbless:
     image: kong:latest
@@ -141,9 +161,9 @@ services:
       users:
         condition: service_healthy
       presence:
-        condition: service_started
+        condition: service_healthy
       leave-requests:
-        condition: service_started
+        condition: service_healthy
 
 networks:
   hiver-net:

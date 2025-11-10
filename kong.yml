@@ -102,7 +102,7 @@ services:
 
   - name: leave-requests-service
     host: leave-requests
-    port: 3001
+    port: 3002
     protocol: http
     connect_timeout: 60000
     write_timeout: 60000
