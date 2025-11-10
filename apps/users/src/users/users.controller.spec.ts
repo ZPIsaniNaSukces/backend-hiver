@@ -1,3 +1,4 @@
+import { MailService } from "@app/mail";
 import { PrismaService } from "@app/prisma";
 
 import type { TestingModule } from "@nestjs/testing";
@@ -18,6 +19,10 @@ describe("UsersController", () => {
       delete: jest.fn(),
     },
   };
+  const mailServiceMock = {
+    sendWelcomeEmail: jest.fn(),
+    sendPasswordResetEmail: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -28,6 +33,10 @@ describe("UsersController", () => {
         {
           provide: PrismaService,
           useValue: prismaServiceMock,
+        },
+        {
+          provide: MailService,
+          useValue: mailServiceMock,
         },
       ],
     }).compile();
