@@ -36,4 +36,5 @@ COPY --from=development /usr/src/app/libs/mail/src/templates ./libs/mail/src/tem
 #run migrations and start app
 ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
 #use db push for dev (no migration files needed), migrate deploy for prod
-CMD sh -c "npx prisma db push --skip-generate && node $APP_MAIN_FILE"
+#this seeds every time docker images are built; to be changed in prod
+CMD sh -c "npx prisma db push --skip-generate --accept-data-loss && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
