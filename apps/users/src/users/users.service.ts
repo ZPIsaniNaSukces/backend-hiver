@@ -33,6 +33,7 @@ export class UsersService {
       email: createUserDto.email,
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
+      dateOfBirth: createUserDto.dateOfBirth ?? null,
       role: createUserDto.role,
       bossId:
         createUserDto.bossId != null && createUserDto.bossId > 0
@@ -89,6 +90,7 @@ export class UsersService {
       email: updateUserDto.email,
       password: hashedPassword,
       phone: updateUserDto.phone ?? null,
+      dateOfBirth: updateUserDto.dateOfBirth ?? null,
       role: updateUserDto.role,
       bossId:
         updateUserDto.bossId != null && updateUserDto.bossId > 0
@@ -206,6 +208,7 @@ export class UsersService {
         name: completeRegistrationDto.name,
         surname: completeRegistrationDto.surname,
         phone: completeRegistrationDto.phone ?? null,
+        dateOfBirth: completeRegistrationDto.dateOfBirth ?? null,
         password: hashedPassword,
         accountStatus: "VERIFIED",
       },

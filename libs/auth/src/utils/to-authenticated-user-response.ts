@@ -8,6 +8,7 @@ export interface UserWithTeamsForAuth {
   email: string;
   role: AuthenticatedUser["role"];
   phone: string | null;
+  dateOfBirth: Date | null;
   bossId: number | null;
   companyId: number;
   teams: { id: number }[];
@@ -27,6 +28,7 @@ export function toAuthenticatedUserResponse(
     email: user.email,
     role: user.role,
     phone: user.phone ?? null,
+    dateOfBirth: user.dateOfBirth ?? null,
     bossId,
     teamIds: user.teams.map((t) => t.id),
     companyId: user.companyId,

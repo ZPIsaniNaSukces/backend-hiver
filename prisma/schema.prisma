@@ -43,6 +43,7 @@ model User {
   email        String       @unique
   password     String
   phone        String?
+  dateOfBirth  DateTime?
   role         USER_ROLE
   companyId    Int
   company      Company  @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)

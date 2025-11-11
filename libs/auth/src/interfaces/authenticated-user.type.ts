@@ -7,6 +7,7 @@ export type AuthenticatedUser = {
   email: string;
   role: USER_ROLE | null;
   phone: string | null;
+  dateOfBirth: Date | null;
   bossId: number | null;
   teamIds: number[];
   companyId: number;

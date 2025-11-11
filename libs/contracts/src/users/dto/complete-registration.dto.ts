@@ -1,4 +1,5 @@
-import { IsOptional, IsString, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { IsDate, IsOptional, IsString, MinLength } from "class-validator";
 
 export class CompleteRegistrationDto {
   @IsString()
@@ -10,6 +11,11 @@ export class CompleteRegistrationDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  dateOfBirth?: Date;
 
   @IsOptional()
   @IsString()
