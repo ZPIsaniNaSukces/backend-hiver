@@ -54,6 +54,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/tasks/tsconfig.app.json"
       }
+    },
+    "presence": {
+      "type": "application",
+      "root": "apps/presence",
+      "entryFile": "main",
+      "sourceRoot": "apps/presence/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/presence/tsconfig.app.json"
+      }
+    },
+    "leave-requests": {
+      "type": "application",
+      "root": "apps/leave-requests",
+      "entryFile": "main",
+      "sourceRoot": "apps/leave-requests/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/leave-requests/tsconfig.app.json"
+      }
     }
   }
 }

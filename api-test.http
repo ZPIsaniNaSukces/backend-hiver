@@ -133,3 +133,39 @@ Authorization: Bearer {{accessToken}}
 ### Delete team
 DELETE {{baseUrl}}/teams/{{teamId}}
 Authorization: Bearer {{accessToken}}
+
+### Create leave request
+POST {{baseUrl}}/leave-requests
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "userId": {{userId}},
+  "startsAt": "2025-11-01",
+  "endsAt": "2025-11-05",
+  "reason": "Vacation time",
+  "status": "PENDING"
+}
+
+### Get all leave requests
+GET {{baseUrl}}/leave-requests
+Authorization: Bearer {{accessToken}}
+
+### Get leave request by id
+@leaveRequestId = 1
+GET {{baseUrl}}/leave-requests/{{leaveRequestId}}
+Authorization: Bearer {{accessToken}}
+
+### Update leave request
+PATCH {{baseUrl}}/leave-requests/{{leaveRequestId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "APPROVED",
+  "approvedBy": {{userId}}
+}
+
+### Delete leave request
+DELETE {{baseUrl}}/leave-requests/{{leaveRequestId}}
+Authorization: Bearer {{accessToken}}

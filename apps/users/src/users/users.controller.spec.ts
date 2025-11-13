@@ -29,6 +29,14 @@ describe("UsersController", () => {
           provide: PrismaService,
           useValue: prismaServiceMock,
         },
+        {
+          provide: "USERS_KAFKA",
+          useValue: {
+            connect: jest.fn(),
+            close: jest.fn(),
+            emit: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
