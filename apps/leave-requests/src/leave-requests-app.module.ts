@@ -1,4 +1,4 @@
-import { AuthModule } from "@app/auth";
+import { AuthClientModule } from "@app/auth";
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
@@ -20,7 +20,7 @@ import {
       databaseUrlEnv: "LEAVE_REQUESTS_DATABASE_URL",
       global: true,
     }),
-    AuthModule,
+    AuthClientModule,
     LeaveRequestsModule,
   ],
   controllers: [LeaveRequestsAppController],

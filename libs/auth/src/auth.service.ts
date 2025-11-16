@@ -51,21 +51,20 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    // Validate required fields for JWT token
+    if (user.name == null || user.surname == null) {
+      throw new UnauthorizedException(
+        "User profile is incomplete. Please complete your registration.",
+      );
+    }
+
     return toAuthenticatedUserResponse(user);
   }
 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
-    if (user.role == null) {
-      throw new UnauthorizedException("User role is not set");
-    }
-
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    } satisfies JwtPayload;
+    const payload = this.buildTokenPayload(user);
 
     const accessToken = await this.jwtService.signAsync(payload);
     const accessTokenExpiresAt = this.getTokenExpiration(accessToken);
@@ -136,15 +135,7 @@ export class AuthService {
 
     const user = toAuthenticatedUserResponse(userRecord);
 
-    if (user.role == null) {
-      throw new UnauthorizedException("User role is not set");
-    }
-
-    const refreshedPayload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    } satisfies JwtPayload;
+    const refreshedPayload = this.buildTokenPayload(user);
 
     const accessToken = await this.jwtService.signAsync(refreshedPayload);
     const accessTokenExpiresAt = this.getTokenExpiration(accessToken);
@@ -215,5 +206,27 @@ export class AuthService {
     }
 
     return new Date(exp * 1000).toISOString();
+  }
+
+  private buildTokenPayload(user: AuthenticatedUser): JwtPayload {
+    // At this point, name and surname are guaranteed to be non-null
+    // because they're validated in validateUser()
+
+    //I have to keep it here because linter complains about possible null values...
+    if (user.name == null || user.surname == null || user.role == null) {
+      throw new Error("Cannot build JWT payload: user has incomplete profile");
+    }
+
+    return {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      surname: user.surname,
+      phone: user.phone,
+      bossId: user.bossId,
+      companyId: user.companyId,
+      teamIds: user.teamIds,
+    } satisfies JwtPayload;
   }
 }

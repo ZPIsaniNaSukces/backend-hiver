@@ -28,8 +28,12 @@ FROM base AS production
 ARG APP
 ARG NODE_ENV=production
 WORKDIR /usr/src/app
+
 ENV NODE_ENV=${NODE_ENV}
 ENV APP_NAME=${APP}
+ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
+ENV PRISMA_SCHEMA_FILE=prisma/${APP_NAME}/schema.prisma
+ENV PRISMA_SEED_FILE=prisma/${APP_NAME}/seed.ts
 
 COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/prisma ./prisma
@@ -37,12 +41,5 @@ COPY --from=development /usr/src/app/generated ./generated
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/libs/mail/src/templates ./libs/mail/src/templates
 
-# Run migrations for the specific service's database on startup
-# Users service: uses DATABASE_URL -> hiver_users
-# Presence service: uses PRESENCE_DATABASE_URL -> hiver_presence
-CMD sh -c "if [ \"$APP_NAME\" = \"users\" ]; then \
-    npx prisma db push --schema=prisma/users/schema.prisma --skip-generate --accept-data-loss; \
-    elif [ \"$APP_NAME\" = \"presence\" ]; then \
-    npx prisma db push --schema=prisma/presence/schema.prisma --skip-generate --accept-data-loss; \
-    fi \
-    && node dist/apps/$APP_NAME/main"
+# Run migrations for the selected service, optionally seed, then boot the Nest app
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss --schema=$PRISMA_SCHEMA_FILE && if [ -f \"$PRISMA_SEED_FILE\" ]; then npx --yes tsx \"$PRISMA_SEED_FILE\"; fi && node $APP_MAIN_FILE"]

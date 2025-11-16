@@ -158,6 +158,18 @@ describe("AuthService", () => {
         return null;
       });
 
+      const expectedPayload = {
+        sub: validUserRecord.id,
+        email: validUserRecord.email,
+        role: validUserRecord.role,
+        name: validUserRecord.name,
+        surname: validUserRecord.surname,
+        phone: validUserRecord.phone,
+        bossId: validUserRecord.bossId,
+        companyId: validUserRecord.companyId,
+        teamIds: [2],
+      } as const;
+
       const result = await authService.login({
         email: validUserRecord.email,
         password: "password",
@@ -181,18 +193,13 @@ describe("AuthService", () => {
           companyId: validUserRecord.companyId,
         },
       });
-      expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(1, {
-        sub: validUserRecord.id,
-        email: validUserRecord.email,
-        role: validUserRecord.role,
-      });
+      expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
+        1,
+        expectedPayload,
+      );
       expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
         2,
-        {
-          sub: validUserRecord.id,
-          email: validUserRecord.email,
-          role: validUserRecord.role,
-        },
+        expectedPayload,
         {
           secret: "refresh-secret",
           expiresIn: "30d",
@@ -215,6 +222,12 @@ describe("AuthService", () => {
           sub: validUserRecord.id,
           email: validUserRecord.email,
           role: validUserRecord.role,
+          name: validUserRecord.name,
+          surname: validUserRecord.surname,
+          phone: validUserRecord.phone,
+          bossId: validUserRecord.bossId,
+          companyId: validUserRecord.companyId,
+          teamIds: [2],
         });
 
         prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
@@ -241,18 +254,25 @@ describe("AuthService", () => {
           "old-refresh-token",
           { secret: "refresh-secret" },
         );
-        expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(1, {
+        const expectedPayload = {
           sub: validUserRecord.id,
           email: validUserRecord.email,
           role: validUserRecord.role,
-        });
+          name: validUserRecord.name,
+          surname: validUserRecord.surname,
+          phone: validUserRecord.phone,
+          bossId: validUserRecord.bossId,
+          companyId: validUserRecord.companyId,
+          teamIds: [2],
+        } as const;
+
+        expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
+          1,
+          expectedPayload,
+        );
         expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
           2,
-          {
-            sub: validUserRecord.id,
-            email: validUserRecord.email,
-            role: validUserRecord.role,
-          },
+          expectedPayload,
           {
             secret: "refresh-secret",
             expiresIn: "14d",
