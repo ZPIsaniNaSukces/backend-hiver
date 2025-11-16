@@ -5,6 +5,9 @@ import {
   CompleteRegistrationDto,
   CreateUserDto,
   UpdateUserDto,
+  UserCreatedEventDto,
+  UserUpdatedEventDto,
+  UsersMessageTopic,
 } from "@app/contracts/users";
 import { MailService } from "@app/mail";
 import { PrismaService } from "@app/prisma";
@@ -12,15 +15,32 @@ import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
+} from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(UsersService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
+    @Inject("USERS_KAFKA") private readonly kafka: ClientKafka,
   ) {}
+
+  async onModuleInit() {
+    await this.kafka.connect();
+  }
+
+  async onModuleDestroy() {
+    await this.kafka.close();
+  }
 
   async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
@@ -52,6 +72,14 @@ export class UsersService {
       data,
       include: { teams: { select: { id: true } } },
     });
+    // Publish user created event for other services
+    const createdEvent: UserCreatedEventDto = {
+      id: user.id,
+      bossId: user.bossId ?? null,
+      companyId: user.companyId,
+    };
+    this.kafka.emit(UsersMessageTopic.CREATE, createdEvent);
+
     return toAuthenticatedUserResponse(user);
   }
 
@@ -115,6 +143,13 @@ export class UsersService {
       data,
       include: { teams: { select: { id: true } } },
     });
+    // Publish user updated event
+    const updatedEvent: UserUpdatedEventDto = {
+      id: user.id,
+      bossId: user.bossId ?? null,
+      companyId: user.companyId,
+    };
+    this.kafka.emit(UsersMessageTopic.UPDATE, updatedEvent);
 
     return toAuthenticatedUserResponse(user);
   }

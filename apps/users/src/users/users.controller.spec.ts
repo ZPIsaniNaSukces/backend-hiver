@@ -38,6 +38,14 @@ describe("UsersController", () => {
           provide: MailService,
           useValue: mailServiceMock,
         },
+        {
+          provide: "USERS_KAFKA",
+          useValue: {
+            connect: jest.fn(),
+            close: jest.fn(),
+            emit: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

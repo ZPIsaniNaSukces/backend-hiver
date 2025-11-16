@@ -10,9 +10,15 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 RUN npm ci --include=dev
+
 COPY prisma ./prisma   
+COPY generated ./generated
 COPY . .
-RUN npx prisma generate
+
+# Generate Prisma clients for all schemas
+RUN npx prisma generate --schema=prisma/users/schema.prisma
+RUN npx prisma generate --schema=prisma/presence/schema.prisma
+
 RUN npm run build ${APP}
 RUN npm prune --omit=dev --exclude=nodemailer --exclude=@nestjs-modules/mailer
 
@@ -24,17 +30,19 @@ ARG NODE_ENV=production
 WORKDIR /usr/src/app
 ENV NODE_ENV=${NODE_ENV}
 ENV APP_NAME=${APP}
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
 
+COPY --from=development /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/prisma ./prisma
-RUN npx prisma generate
-
+COPY --from=development /usr/src/app/generated ./generated
 COPY --from=development /usr/src/app/dist ./dist
 COPY --from=development /usr/src/app/libs/mail/src/templates ./libs/mail/src/templates
 
-#run migrations and start app
-ENV APP_MAIN_FILE=dist/apps/${APP_NAME}/main
-#use db push for dev (no migration files needed), migrate deploy for prod
-#this seeds every time docker images are built; to be changed in prod
-CMD sh -c "npx prisma db push --skip-generate --accept-data-loss && npx tsx prisma/seed.ts && node $APP_MAIN_FILE"
+# Run migrations for the specific service's database on startup
+# Users service: uses DATABASE_URL -> hiver_users
+# Presence service: uses PRESENCE_DATABASE_URL -> hiver_presence
+CMD sh -c "if [ \"$APP_NAME\" = \"users\" ]; then \
+    npx prisma db push --schema=prisma/users/schema.prisma --skip-generate --accept-data-loss; \
+    elif [ \"$APP_NAME\" = \"presence\" ]; then \
+    npx prisma db push --schema=prisma/presence/schema.prisma --skip-generate --accept-data-loss; \
+    fi \
+    && node dist/apps/$APP_NAME/main"

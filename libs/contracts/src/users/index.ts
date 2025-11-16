@@ -3,4 +3,7 @@ export * from "./dto/update-user.dto";
 export * from "./dto/register-user.dto";
 export * from "./dto/registration-result.dto";
 export * from "./dto/complete-registration.dto";
+export * from "./dto/user-created.event";
+export * from "./dto/user-updated.event";
+export * from "./dto/user-removed-event.dto";
 export * from "./topics";

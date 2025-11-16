@@ -24,14 +24,20 @@
     "paths": {
       "@app/auth": ["libs/auth/src"],
       "@app/auth/*": ["libs/auth/src/*"],
-      "@app/contracts": ["libs/contracts/src"],
-      "@app/contracts/*": ["libs/contracts/src/*"],
       "@app/prisma": ["libs/prisma/src"],
       "@app/prisma/*": ["libs/prisma/src/*"],
       "@app/utils": ["libs/utils/src"],
       "@app/utils/*": ["libs/utils/src/*"],
       "@app/mail": ["libs/mail/src"],
-      "@app/mail/*": ["libs/mail/src/*"]
+      "@app/mail/*": ["libs/mail/src/*"],
+      "@app/contracts": ["libs/contracts/src"],
+      "@app/contracts/*": ["libs/contracts/src/*"],
+      "@generated/presence": ["generated/prisma/presence-client"],
+      "@generated/presence/*": ["generated/prisma/presence-client/*"],
+      "@generated/leave-requests": ["generated/prisma/leave-requests-client"],
+      "@generated/leave-requests/*": [
+        "generated/prisma/leave-requests-client/*"
+      ]
     }
   }
 }

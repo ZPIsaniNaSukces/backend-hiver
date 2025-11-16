@@ -7,6 +7,7 @@ import type { JwtSignOptions } from "@nestjs/jwt";
 
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
+import { CompanyScopedGuard } from "./guards/company-scoped.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { RolesGuard } from "./guards/roles.guard";
 import { JwtStrategy } from "./strategies/jwt.strategy";
@@ -14,7 +15,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule,
+    PrismaModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,7 +32,19 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard, JwtAuthGuard],
-  exports: [AuthService, JwtModule, RolesGuard, JwtAuthGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    JwtAuthGuard,
+    CompanyScopedGuard,
+  ],
+  exports: [
+    AuthService,
+    JwtModule,
+    RolesGuard,
+    JwtAuthGuard,
+    CompanyScopedGuard,
+  ],
 })
 export class AuthModule {}
