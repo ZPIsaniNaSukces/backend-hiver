@@ -52,6 +52,15 @@
         "tsConfigPath": "libs/mail/tsconfig.lib.json"
       }
     },
+    "pagination": {
+      "type": "library",
+      "root": "libs/pagination",
+      "entryFile": "index",
+      "sourceRoot": "libs/pagination/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/pagination/tsconfig.lib.json"
+      }
+    },
     "users": {
       "type": "application",
       "root": "apps/users",

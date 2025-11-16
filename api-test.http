@@ -106,6 +106,18 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/users
 Authorization: Bearer {{accessToken}}
 
+### Get all users - paginated (default: page=1, limit=10)
+GET {{baseUrl}}/users?page=1&limit=10
+Authorization: Bearer {{accessToken}}
+
+### Get all users - page 1 with limit 2
+GET {{baseUrl}}/users?page=1&limit=2
+Authorization: Bearer {{accessToken}}
+
+### Get all users - page 2 with limit 2
+GET {{baseUrl}}/users?page=2&limit=2
+Authorization: Bearer {{accessToken}}
+
 ### Get user by id
 GET {{baseUrl}}/users/{{userId}}
 Authorization: Bearer {{accessToken}}

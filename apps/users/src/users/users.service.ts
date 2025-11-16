@@ -10,6 +10,11 @@ import {
   UsersMessageTopic,
 } from "@app/contracts/users";
 import { MailService } from "@app/mail";
+import type { PaginatedResponse, PaginationQueryDto } from "@app/pagination";
+import {
+  createPaginatedResponse,
+  getPaginationParameters,
+} from "@app/pagination";
 import { PrismaService } from "@app/prisma";
 import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
@@ -83,11 +88,27 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     return toAuthenticatedUserResponse(user);
   }
 
-  async findAll(): Promise<AuthenticatedUser[]> {
-    const users = await this.prisma.user.findMany({
-      include: { teams: { select: { id: true } } },
-    });
-    return users.map((user) => toAuthenticatedUserResponse(user));
+  async findAll(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResponse<AuthenticatedUser>> {
+    const page = paginationQuery.page ?? 1;
+    const limit = paginationQuery.limit ?? 10;
+    const { skip, take } = getPaginationParameters(page, limit);
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take,
+        include: { teams: { select: { id: true } } },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    const authenticatedUsers = users.map((user) =>
+      toAuthenticatedUserResponse(user),
+    );
+
+    return createPaginatedResponse(authenticatedUsers, total, page, limit);
   }
 
   async findOne(id: number): Promise<AuthenticatedUser | null> {

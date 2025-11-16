@@ -54,6 +54,7 @@
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
       "^@app/utils(|/.*)$": "<rootDir>/libs/utils/src/$1",
       "^@app/mail(|/.*)$": "<rootDir>/libs/mail/src/$1",
+      "^@app/pagination(|/.*)$": "<rootDir>/libs/pagination/src/$1",
       "^@generated/presence(|/.*)$": "<rootDir>/generated/prisma/presence-client/$1",
       "^@generated/leave-requests(|/.*)$": "<rootDir>/generated/prisma/leave-requests-client/$1"
     },
