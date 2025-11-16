@@ -1,50 +1,16 @@
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtModule } from "@nestjs/jwt";
-import type { JwtSignOptions } from "@nestjs/jwt";
+import { ConfigModule } from "@nestjs/config";
 
+import { AuthClientModule } from "./auth-client.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { CompanyScopedGuard } from "./guards/company-scoped.guard";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { RolesGuard } from "./guards/roles.guard";
-import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule.forRoot(),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const expiresIn = configService.get<string>("JWT_EXPIRES_IN") ?? "1h";
-
-        return {
-          secret: configService.getOrThrow<string>("JWT_SECRET"),
-          signOptions: {
-            expiresIn: expiresIn as JwtSignOptions["expiresIn"],
-          },
-        };
-      },
-    }),
-  ],
+  imports: [ConfigModule, PrismaModule.forRoot(), AuthClientModule],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    RolesGuard,
-    JwtAuthGuard,
-    CompanyScopedGuard,
-  ],
-  exports: [
-    AuthService,
-    JwtModule,
-    RolesGuard,
-    JwtAuthGuard,
-    CompanyScopedGuard,
-  ],
+  providers: [AuthService],
+  exports: [AuthService, AuthClientModule],
 })
 export class AuthModule {}
