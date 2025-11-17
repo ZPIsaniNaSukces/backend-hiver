@@ -17,6 +17,8 @@ COPY . .
 # Generate Prisma clients for all schemas
 RUN npx prisma generate --schema=prisma/users/schema.prisma
 RUN npx prisma generate --schema=prisma/presence/schema.prisma
+RUN npx prisma generate --schema=prisma/leave-requests/schema.prisma
+RUN npx prisma generate --schema=prisma/tasks/schema.prisma
 
 RUN npm run build ${APP}
 RUN npm prune --omit=dev

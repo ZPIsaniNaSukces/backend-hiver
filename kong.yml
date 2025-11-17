@@ -129,7 +129,7 @@ services:
 
   - name: tasks-service
     host: tasks
-    port: 3001
+    port: 3003
     protocol: http
     connect_timeout: 60000
     write_timeout: 60000

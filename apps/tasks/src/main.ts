@@ -15,10 +15,10 @@ async function bootstrap() {
     options: {
       client: {
         clientId: "tasks-service",
-        brokers: [process.env.KAFKA_BROKER ?? "localhost:9092"],
+        brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
       },
       consumer: {
-        groupId: "tasks-consumer",
+        groupId: "tasks-service-consumer",
       },
     },
   });
@@ -35,9 +35,7 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaExceptionFilter());
 
   await app.startAllMicroservices();
-
-  const port = process.env.PORT ?? 3001;
-  await app.listen(port);
+  await app.listen(process.env.PORT ?? 3003);
 }
 
 void bootstrap();

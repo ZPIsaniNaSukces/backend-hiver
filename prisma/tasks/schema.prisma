@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/tasks-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TASKS_DATABASE_URL")
+}
+
+enum TASK_STATUS {
+  TODO
+  DONE
+}
+
+enum TASK_TYPE {
+  BUG
+  FEATURE
+  IMPROVEMENT
+  DOCUMENTATION
+  RESEARCH
+  MEETING
+  OTHER
+}
+
+model TaskUserInfo {
+  id        Int @id
+  bossId    Int?
+  companyId Int
+
+  tasksReported Task[] @relation("TaskReporter")
+  tasksAssigned Task[] @relation("TaskAssignee")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  status      TASK_STATUS @default(TODO)
+  type        TASK_TYPE   @default(OTHER)
+  dueDate     DateTime?
+  reporterId  Int?
+  assigneeId  Int?
+
+  reporter TaskUserInfo? @relation("TaskReporter", fields: [reporterId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  assignee TaskUserInfo? @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assigneeId, status])
+  @@index([reporterId])
+  @@index([status])
+  @@index([type])
+}
