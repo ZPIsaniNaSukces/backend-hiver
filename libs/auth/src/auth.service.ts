@@ -33,8 +33,10 @@ export class AuthService {
         password: true,
         role: true,
         phone: true,
+        dateOfBirth: true,
         bossId: true,
         companyId: true,
+        accountStatus: true,
         teams: { select: { id: true } },
       },
     });
@@ -47,6 +49,13 @@ export class AuthService {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException("Invalid credentials");
+    }
+
+    // Validate required fields for JWT token
+    if (user.name == null || user.surname == null) {
+      throw new UnauthorizedException(
+        "User profile is incomplete. Please complete your registration.",
+      );
     }
 
     return toAuthenticatedUserResponse(user);
@@ -112,8 +121,10 @@ export class AuthService {
         email: true,
         role: true,
         phone: true,
+        dateOfBirth: true,
         bossId: true,
         companyId: true,
+        accountStatus: true,
         teams: { select: { id: true } },
       },
     });
@@ -198,6 +209,14 @@ export class AuthService {
   }
 
   private buildTokenPayload(user: AuthenticatedUser): JwtPayload {
+    // At this point, name and surname are guaranteed to be non-null
+    // because they're validated in validateUser()
+
+    //I have to keep it here because linter complains about possible null values...
+    if (user.name == null || user.surname == null || user.role == null) {
+      throw new Error("Cannot build JWT payload: user has incomplete profile");
+    }
+
     return {
       sub: user.id,
       email: user.email,

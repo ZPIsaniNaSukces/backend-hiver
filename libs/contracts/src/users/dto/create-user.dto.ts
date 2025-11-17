@@ -2,6 +2,7 @@ import { USER_ROLE } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsDate,
   IsEmail,
   IsEnum,
   IsInt,
@@ -13,11 +14,11 @@ import {
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  name?: string;
 
   @IsString()
   @IsNotEmpty()
-  surname!: string;
+  surname?: string;
 
   @IsEmail()
   email!: string;
@@ -29,6 +30,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  dateOfBirth?: Date;
 
   @IsEnum(USER_ROLE)
   role!: USER_ROLE;

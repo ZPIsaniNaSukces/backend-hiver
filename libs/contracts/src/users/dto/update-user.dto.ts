@@ -1,5 +1,6 @@
+import { ACCOUNT_STATUS } from "@prisma/client";
 import { Type } from "class-transformer";
-import { IsArray, IsInt, IsOptional } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsOptional } from "class-validator";
 
 import { PartialType } from "@nestjs/mapped-types";
 
@@ -15,4 +16,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsArray()
   teamIds?: number[];
+
+  @IsOptional()
+  @IsEnum(ACCOUNT_STATUS)
+  accountStatus?: ACCOUNT_STATUS;
 }

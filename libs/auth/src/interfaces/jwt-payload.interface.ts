@@ -1,6 +1,6 @@
 import type { USER_ROLE } from "@prisma/client";
 
-export interface JwtPayload {
+export type JwtPayload = {
   sub: number;
   email: string;
   role: USER_ROLE;
@@ -12,4 +12,4 @@ export interface JwtPayload {
   teamIds: number[];
   iat?: number;
   exp?: number;
-}
+};

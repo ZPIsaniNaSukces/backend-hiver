@@ -1,0 +1,9 @@
+FROM kong:3.8.0
+USER root
+#ECS-specific kong config with Service Discovery DNS
+COPY kong.ecs.yml /kong/declarative/kong.yml
+#permissions
+RUN chmod 644 /kong/declarative/kong.yml
+USER kong
+# Kong will use the declarative config on startup
+# Service Discovery will resolve users.hiver-dev.local to the users ECS service

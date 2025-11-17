@@ -5,7 +5,7 @@ import * as bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 const hashPassword = async (raw: string) => {
-  const saltRounds = 10;
+  const saltRounds = 12;
   return bcrypt.hash(raw, saltRounds);
 };
 
