@@ -2,6 +2,7 @@ import { AuthModule } from "@app/auth";
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 
 import { CompaniesModule } from "./companies/companies.module";
 import { TeamsModule } from "./teams/teams.module";
@@ -10,7 +11,8 @@ import { UsersModule } from "./users/users.module";
 
 @Module({
   imports: [
-    PrismaModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule.forRoot({ global: true }),
     UsersModule,
     TeamsModule,
     CompaniesModule,

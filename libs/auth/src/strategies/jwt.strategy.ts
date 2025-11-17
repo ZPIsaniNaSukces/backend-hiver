@@ -1,4 +1,3 @@
-import { PrismaService } from "@app/prisma";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import { Injectable, UnauthorizedException } from "@nestjs/common";
@@ -7,14 +6,10 @@ import { PassportStrategy } from "@nestjs/passport";
 
 import type { AuthenticatedUser } from "../interfaces/authenticated-user.type";
 import type { JwtPayload } from "../interfaces/jwt-payload.interface";
-import { toAuthenticatedUserResponse } from "../utils/to-authenticated-user-response";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    configService: ConfigService,
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -22,26 +17,27 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        email: true,
-        role: true,
-        phone: true,
-        bossId: true,
-        companyId: true,
-        teams: { select: { id: true } },
-      },
-    });
+  validate(payload: JwtPayload): AuthenticatedUser {
+    const hasRequiredFields =
+      typeof payload.name === "string" &&
+      typeof payload.surname === "string" &&
+      Array.isArray(payload.teamIds) &&
+      typeof payload.companyId === "number";
 
-    if (user == null) {
-      throw new UnauthorizedException("User no longer exists");
+    if (!hasRequiredFields) {
+      throw new UnauthorizedException("Token payload is missing user context");
     }
 
-    return toAuthenticatedUserResponse(user);
+    return {
+      id: payload.sub,
+      name: payload.name,
+      surname: payload.surname,
+      email: payload.email,
+      role: payload.role,
+      phone: payload.phone ?? null,
+      bossId: payload.bossId ?? null,
+      teamIds: payload.teamIds,
+      companyId: payload.companyId,
+    } satisfies AuthenticatedUser;
   }
 }

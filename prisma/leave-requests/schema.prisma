@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/leave-requests-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("LEAVE_REQUESTS_DATABASE_URL")
+}
+
+enum LEAVE_STATUS {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model LeaveRequestUserInfo {
+  id                 Int  @id
+  bossId             Int?
+  companyId          Int
+  availableLeaveDays Int  @default(20)
+
+  LeaveRequest     LeaveRequest[]
+  approvedRequests LeaveRequest[] @relation("LeaveRequestApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeaveRequest {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  startsAt     DateTime
+  endsAt       DateTime
+  reason       String
+  status       LEAVE_STATUS
+  approvedById Int?
+
+  user       LeaveRequestUserInfo  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvedBy LeaveRequestUserInfo? @relation("LeaveRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, startsAt])
+  @@index([status])
+}

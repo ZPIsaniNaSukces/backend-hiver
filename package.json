@@ -11,6 +11,18 @@
     "format:check": "prettier --check .",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "prepare": "husky || true",
+    "prisma:generate": "npm run prisma:generate:users && npm run prisma:generate:presence",
+    "prisma:generate:presence": "prisma generate --schema=prisma/presence/schema.prisma",
+    "prisma:generate:users": "prisma generate --schema=prisma/users/schema.prisma",
+    "prisma:migrate:deploy:presence": "prisma migrate deploy --schema=prisma/presence/schema.prisma",
+    "prisma:migrate:deploy:users": "prisma migrate deploy --schema=prisma/users/schema.prisma",
+    "prisma:migrate:presence": "prisma migrate dev --schema=prisma/presence/schema.prisma",
+    "prisma:migrate:users": "prisma migrate dev --schema=prisma/users/schema.prisma",
+    "prisma:seed": "npm run prisma:seed:users && npm run prisma:seed:presence",
+    "prisma:seed:presence": "PRESENCE_DATABASE_URL=\"postgresql://postgres:password@localhost:5432/hiver_presence\" ts-node prisma/presence/seed.ts",
+    "prisma:seed:users": "ts-node prisma/users/seed.ts",
+    "prisma:studio:presence": "prisma studio --schema=prisma/presence/schema.prisma",
+    "prisma:studio:users": "prisma studio --schema=prisma/users/schema.prisma",
     "start": "nest start",
     "start:debug": "nest start --debug --watch",
     "start:dev": "nest start --watch",
@@ -39,7 +51,9 @@
     "moduleNameMapper": {
       "^@app/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
       "^@app/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1",
-      "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1"
+      "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
+      "^@generated/presence(|/.*)$": "<rootDir>/generated/prisma/presence-client/$1",
+      "^@generated/leave-requests(|/.*)$": "<rootDir>/generated/prisma/leave-requests-client/$1"
     },
     "rootDir": ".",
     "roots": [
@@ -69,7 +83,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "tsx": "^4.20.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
@@ -105,6 +120,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/users/seed.ts",
+    "schema": "prisma/users/schema.prisma"
   }
 }

@@ -35,7 +35,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: hiver
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -59,13 +58,87 @@ services:
     environment:
       USERS_SERVICE_HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_users
       KAFKA_BROKER: kafka:9092
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/users-app/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  presence:
+    container_name: presence
+    build:
+      context: .
+      args:
+        - APP=presence
+    restart: always
+    networks:
+      - hiver-net
+    env_file:
+      - .env
+    environment:
+      PRESENCE_SERVICE_HOST: 0.0.0.0
+      PORT: 3001
+      PRESENCE_DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_presence
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3001/presence-app/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  leave-requests:
+    container_name: leave-requests
+    build:
+      context: .
+      args:
+        - APP=leave-requests
+    restart: always
+    networks:
+      - hiver-net
+    env_file:
+      - .env
+    environment:
+      LEAVE_REQUESTS_SERVICE_HOST: 0.0.0.0
+      PORT: 3002
+      LEAVE_REQUESTS_DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_leave_requests
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3002/leave-requests-app/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   tasks:
     container_name: tasks
@@ -116,8 +189,13 @@ services:
       - "8443:8443"
       - "8001:8001"
       - "8444:8444"
-    depends_on: # add more microservices in the future when created
-      - users
+    depends_on:
+      users:
+        condition: service_healthy
+      presence:
+        condition: service_healthy
+      leave-requests:
+        condition: service_healthy
 
 networks:
   hiver-net:

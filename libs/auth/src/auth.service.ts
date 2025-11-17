@@ -55,11 +55,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    } satisfies JwtPayload;
+    const payload = this.buildTokenPayload(user);
 
     const accessToken = await this.jwtService.signAsync(payload);
     const accessTokenExpiresAt = this.getTokenExpiration(accessToken);
@@ -128,11 +124,7 @@ export class AuthService {
 
     const user = toAuthenticatedUserResponse(userRecord);
 
-    const refreshedPayload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    } satisfies JwtPayload;
+    const refreshedPayload = this.buildTokenPayload(user);
 
     const accessToken = await this.jwtService.signAsync(refreshedPayload);
     const accessTokenExpiresAt = this.getTokenExpiration(accessToken);
@@ -203,5 +195,19 @@ export class AuthService {
     }
 
     return new Date(exp * 1000).toISOString();
+  }
+
+  private buildTokenPayload(user: AuthenticatedUser): JwtPayload {
+    return {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      surname: user.surname,
+      phone: user.phone,
+      bossId: user.bossId,
+      companyId: user.companyId,
+      teamIds: user.teamIds,
+    } satisfies JwtPayload;
   }
 }
