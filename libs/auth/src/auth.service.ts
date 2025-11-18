@@ -34,6 +34,7 @@ export class AuthService {
         role: true,
         phone: true,
         dateOfBirth: true,
+        title: true,
         bossId: true,
         companyId: true,
         accountStatus: true,
@@ -122,6 +123,7 @@ export class AuthService {
         role: true,
         phone: true,
         dateOfBirth: true,
+        title: true,
         bossId: true,
         companyId: true,
         accountStatus: true,
@@ -224,9 +226,11 @@ export class AuthService {
       name: user.name,
       surname: user.surname,
       phone: user.phone,
+      title: user.title,
       bossId: user.bossId,
       companyId: user.companyId,
       teamIds: user.teamIds,
+      accountStatus: user.accountStatus,
     } satisfies JwtPayload;
   }
 }

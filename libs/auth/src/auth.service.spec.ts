@@ -1,5 +1,5 @@
 import { PrismaService } from "@app/prisma";
-import { USER_ROLE } from "@prisma/client";
+import { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import { UnauthorizedException } from "@nestjs/common";
@@ -45,6 +45,8 @@ describe("AuthService", () => {
     bossId: null,
     companyId: 3,
     teams: [{ id: 2 }],
+    title: null,
+    accountStatus: ACCOUNT_STATUS.VERIFIED,
   } as const;
 
   let authService: AuthService;
@@ -97,9 +99,11 @@ describe("AuthService", () => {
         role: validUserRecord.role,
         phone: validUserRecord.phone,
         dateOfBirth: null,
+        title: null,
         bossId: validUserRecord.bossId,
         teamIds: [2],
         companyId: validUserRecord.companyId,
+        accountStatus: ACCOUNT_STATUS.VERIFIED,
       });
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         "password",
@@ -168,6 +172,8 @@ describe("AuthService", () => {
         bossId: validUserRecord.bossId,
         companyId: validUserRecord.companyId,
         teamIds: [2],
+        title: null,
+        accountStatus: ACCOUNT_STATUS.VERIFIED,
       } as const;
 
       const result = await authService.login({
@@ -188,9 +194,11 @@ describe("AuthService", () => {
           role: validUserRecord.role,
           phone: validUserRecord.phone,
           dateOfBirth: null,
+          title: null,
           bossId: validUserRecord.bossId,
           teamIds: [2],
           companyId: validUserRecord.companyId,
+          accountStatus: ACCOUNT_STATUS.VERIFIED,
         },
       });
       expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
@@ -264,6 +272,8 @@ describe("AuthService", () => {
           bossId: validUserRecord.bossId,
           companyId: validUserRecord.companyId,
           teamIds: [2],
+          title: null,
+          accountStatus: ACCOUNT_STATUS.VERIFIED,
         } as const;
 
         expect(jwtServiceMock.signAsync).toHaveBeenNthCalledWith(
@@ -292,9 +302,11 @@ describe("AuthService", () => {
             role: validUserRecord.role,
             phone: validUserRecord.phone,
             dateOfBirth: null,
+            title: null,
             bossId: validUserRecord.bossId,
             teamIds: [2],
             companyId: validUserRecord.companyId,
+            accountStatus: ACCOUNT_STATUS.VERIFIED,
           },
         });
       });

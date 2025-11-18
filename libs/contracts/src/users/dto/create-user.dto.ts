@@ -36,6 +36,10 @@ export class CreateUserDto {
   @IsDate()
   dateOfBirth?: Date;
 
+  @IsOptional()
+  @IsString()
+  title?: string;
+
   @IsEnum(USER_ROLE)
   role!: USER_ROLE;
 

@@ -73,18 +73,18 @@ describe("UsersService", () => {
       ];
       const total = 1;
 
-      (prismaService.user.findMany as jest.Mock).mockResolvedValue(users);
-      (prismaService.user.count as jest.Mock).mockResolvedValue(total);
+      prismaServiceMock.user.findMany.mockResolvedValue(users);
+      prismaServiceMock.user.count.mockResolvedValue(total);
 
       const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(prismaService.user.findMany as jest.Mock).toHaveBeenCalledWith({
+      expect(prismaServiceMock.user.findMany).toHaveBeenCalledWith({
         where: undefined,
         skip: 0,
         take: 10,
         include: { teams: { select: { id: true } } },
       });
-      expect(prismaService.user.count as jest.Mock).toHaveBeenCalledWith({
+      expect(prismaServiceMock.user.count).toHaveBeenCalledWith({
         where: undefined,
       });
       expect(result.data).toHaveLength(1);
@@ -107,8 +107,8 @@ describe("UsersService", () => {
       const total = 1;
       const searchTerm = "Alice";
 
-      (prismaService.user.findMany as jest.Mock).mockResolvedValue(users);
-      (prismaService.user.count as jest.Mock).mockResolvedValue(total);
+      prismaServiceMock.user.findMany.mockResolvedValue(users);
+      prismaServiceMock.user.count.mockResolvedValue(total);
 
       const result = await service.findAll({
         page: 1,
@@ -124,13 +124,13 @@ describe("UsersService", () => {
         ],
       };
 
-      expect(prismaService.user.findMany as jest.Mock).toHaveBeenCalledWith({
+      expect(prismaServiceMock.user.findMany).toHaveBeenCalledWith({
         where: expectedWhere,
         skip: 0,
         take: 10,
         include: { teams: { select: { id: true } } },
       });
-      expect(prismaService.user.count as jest.Mock).toHaveBeenCalledWith({
+      expect(prismaServiceMock.user.count).toHaveBeenCalledWith({
         where: expectedWhere,
       });
       expect(result.data).toHaveLength(1);

@@ -1,4 +1,4 @@
-import type { USER_ROLE } from "@prisma/client";
+import type { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 
 export type JwtPayload = {
   sub: number;
@@ -7,9 +7,11 @@ export type JwtPayload = {
   name: string;
   surname: string;
   phone: string | null;
+  title: string | null;
   bossId: number | null;
   companyId: number;
   teamIds: number[];
+  accountStatus: ACCOUNT_STATUS;
   iat?: number;
   exp?: number;
 };

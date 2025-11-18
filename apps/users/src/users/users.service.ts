@@ -63,6 +63,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
       dateOfBirth: createUserDto.dateOfBirth ?? null,
+      title: createUserDto.title ?? null,
       role: createUserDto.role,
       bossId:
         createUserDto.bossId != null && createUserDto.bossId > 0
@@ -154,6 +155,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       password: hashedPassword,
       phone: updateUserDto.phone ?? null,
       dateOfBirth: updateUserDto.dateOfBirth ?? null,
+      title: updateUserDto.title ?? null,
       role: updateUserDto.role,
       bossId:
         updateUserDto.bossId != null && updateUserDto.bossId > 0
@@ -279,6 +281,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         surname: completeRegistrationDto.surname,
         phone: completeRegistrationDto.phone ?? null,
         dateOfBirth: completeRegistrationDto.dateOfBirth ?? null,
+        title: completeRegistrationDto.title ?? null,
         password: hashedPassword,
         accountStatus: "VERIFIED",
       },

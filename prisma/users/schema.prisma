@@ -41,6 +41,9 @@ model Team {
   company   Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   // Many-to-many members
   users     User[]
+
+  leaderId Int?
+  leader   User? @relation("TeamLeader", fields: [leaderId], references: [id])
 }
 
 model User {
@@ -51,6 +54,7 @@ model User {
   password     String
   phone        String?
   dateOfBirth  DateTime?
+  title        String?
   role         USER_ROLE
   companyId    Int
   company      Company   @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -62,6 +66,7 @@ model User {
 
   // Many-to-many relation: a user can be a member of many teams
   teams Team[]
+  ledTeams Team[] @relation("TeamLeader")
 }
 
 // Leave Requests Microservice Models
