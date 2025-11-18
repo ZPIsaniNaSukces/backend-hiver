@@ -6,7 +6,7 @@ import {
   RegisterUserDto,
   UpdateUserDto,
 } from "@app/contracts/users";
-import { PaginationQueryDto } from "@app/pagination";
+import { PaginatedSearchQueryDto } from "@app/pagination";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -48,8 +48,8 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return await this.usersService.findAll(paginationQuery);
+  async findAll(@Query() query: PaginatedSearchQueryDto) {
+    return await this.usersService.findAll(query);
   }
 
   @Get(":id")

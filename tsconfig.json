@@ -34,6 +34,8 @@
       "@app/contracts/*": ["libs/contracts/src/*"],
       "@app/pagination": ["libs/pagination/src"],
       "@app/pagination/*": ["libs/pagination/src/*"],
+      "@app/search": ["libs/search/src"],
+      "@app/search/*": ["libs/search/src/*"],
       "@generated/presence": ["generated/prisma/presence-client"],
       "@generated/presence/*": ["generated/prisma/presence-client/*"],
       "@generated/leave-requests": ["generated/prisma/leave-requests-client"],

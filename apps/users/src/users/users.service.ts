@@ -10,12 +10,16 @@ import {
   UsersMessageTopic,
 } from "@app/contracts/users";
 import { MailService } from "@app/mail";
-import type { PaginatedResponse, PaginationQueryDto } from "@app/pagination";
+import type {
+  PaginatedResponse,
+  PaginatedSearchQueryDto,
+} from "@app/pagination";
 import {
   createPaginatedResponse,
   getPaginationParameters,
 } from "@app/pagination";
 import { PrismaService } from "@app/prisma";
+import { buildSearchWhere } from "@app/search";
 import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
@@ -89,19 +93,29 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
   }
 
   async findAll(
-    paginationQuery: PaginationQueryDto,
+    query: PaginatedSearchQueryDto,
   ): Promise<PaginatedResponse<AuthenticatedUser>> {
-    const page = paginationQuery.page ?? 1;
-    const limit = paginationQuery.limit ?? 10;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
     const { skip, take } = getPaginationParameters(page, limit);
+
+    // Build search filter for name, surname, and email fields
+    const searchWhere = buildSearchWhere(query.search, [
+      "name",
+      "surname",
+      "email",
+    ]);
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
+        where: searchWhere,
         skip,
         take,
         include: { teams: { select: { id: true } } },
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({
+        where: searchWhere,
+      }),
     ]);
 
     const authenticatedUsers = users.map((user) =>

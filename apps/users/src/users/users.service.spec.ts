@@ -16,6 +16,7 @@ describe("UsersService", () => {
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      count: jest.fn(),
     },
   };
   const mailServiceMock = {
@@ -54,5 +55,86 @@ describe("UsersService", () => {
   it("should be defined", () => {
     expect(service).toBeDefined();
     expect(prismaService).toBeDefined();
+  });
+
+  describe("findAll", () => {
+    it("should return paginated users without search", async () => {
+      const users = [
+        {
+          id: 1,
+          name: "John",
+          surname: "Doe",
+          email: "john@example.com",
+          password: "hashed",
+          role: "EMPLOYEE",
+          companyId: 1,
+          teams: [],
+        },
+      ];
+      const total = 1;
+
+      (prismaService.user.findMany as jest.Mock).mockResolvedValue(users);
+      (prismaService.user.count as jest.Mock).mockResolvedValue(total);
+
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(prismaService.user.findMany as jest.Mock).toHaveBeenCalledWith({
+        where: undefined,
+        skip: 0,
+        take: 10,
+        include: { teams: { select: { id: true } } },
+      });
+      expect(prismaService.user.count as jest.Mock).toHaveBeenCalledWith({
+        where: undefined,
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+    });
+
+    it("should return paginated users with search", async () => {
+      const users = [
+        {
+          id: 1,
+          name: "Alice",
+          surname: "Smith",
+          email: "alice@example.com",
+          password: "hashed",
+          role: "EMPLOYEE",
+          companyId: 1,
+          teams: [],
+        },
+      ];
+      const total = 1;
+      const searchTerm = "Alice";
+
+      (prismaService.user.findMany as jest.Mock).mockResolvedValue(users);
+      (prismaService.user.count as jest.Mock).mockResolvedValue(total);
+
+      const result = await service.findAll({
+        page: 1,
+        limit: 10,
+        search: searchTerm,
+      });
+
+      const expectedWhere = {
+        OR: [
+          { name: { contains: searchTerm, mode: "insensitive" } },
+          { surname: { contains: searchTerm, mode: "insensitive" } },
+          { email: { contains: searchTerm, mode: "insensitive" } },
+        ],
+      };
+
+      expect(prismaService.user.findMany as jest.Mock).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: 0,
+        take: 10,
+        include: { teams: { select: { id: true } } },
+      });
+      expect(prismaService.user.count as jest.Mock).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+    });
   });
 });
