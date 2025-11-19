@@ -140,6 +140,34 @@ services:
       retries: 5
       start_period: 30s
 
+  tasks:
+    container_name: tasks
+    build:
+      context: .
+      args:
+        - APP=tasks
+    restart: always
+    networks:
+      - hiver-net
+    env_file:
+      - .env
+    environment:
+      TASKS_SERVICE_HOST: 0.0.0.0
+      PORT: 3003
+      TASKS_DATABASE_URL: postgresql://postgres:password@postgres:5432/hiver_tasks
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "netstat -an | grep 3003 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   kong-dbless:
     image: kong:latest
     container_name: kong
@@ -173,6 +201,8 @@ services:
       presence:
         condition: service_healthy
       leave-requests:
+        condition: service_healthy
+      tasks:
         condition: service_healthy
 
 networks:

@@ -61,6 +61,15 @@
         "tsConfigPath": "apps/users/tsconfig.app.json"
       }
     },
+    "tasks": {
+      "type": "application",
+      "root": "apps/tasks",
+      "entryFile": "main",
+      "sourceRoot": "apps/tasks/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tasks/tsconfig.app.json"
+      }
+    },
     "utils": {
       "type": "library",
       "root": "libs/utils",

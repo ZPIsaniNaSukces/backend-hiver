@@ -39,6 +39,10 @@ jobs:
         run: npx prisma generate --schema=prisma/leave-requests/schema.prisma
         if: always()
 
+      - name: Run Prisma Generate (Tasks)
+        run: npx prisma generate --schema=prisma/tasks/schema.prisma
+        if: always()
+
       - name: Run prettier
         run: npm run format:check
         if: always()

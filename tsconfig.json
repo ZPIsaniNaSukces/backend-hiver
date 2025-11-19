@@ -37,7 +37,9 @@
       "@generated/leave-requests": ["generated/prisma/leave-requests-client"],
       "@generated/leave-requests/*": [
         "generated/prisma/leave-requests-client/*"
-      ]
+      ],
+      "@generated/tasks": ["generated/prisma/tasks-client"],
+      "@generated/tasks/*": ["generated/prisma/tasks-client/*"]
     }
   }
 }
