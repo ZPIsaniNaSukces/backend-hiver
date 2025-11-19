@@ -1,13 +1,12 @@
-import { PrismaService } from "@app/prisma";
-
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 
+import { TASKS_PRISMA } from "./prisma/prisma.constants";
 import { TasksService } from "./tasks.service";
 
 describe("TasksService", () => {
   let service: TasksService;
-  let prismaService: PrismaService;
+  let prismaService: typeof prismaServiceMock;
   const prismaServiceMock = {
     task: {
       create: jest.fn(),
@@ -26,14 +25,14 @@ describe("TasksService", () => {
       providers: [
         TasksService,
         {
-          provide: PrismaService,
+          provide: TASKS_PRISMA,
           useValue: prismaServiceMock,
         },
       ],
     }).compile();
 
     service = module.get<TasksService>(TasksService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    prismaService = module.get<typeof prismaServiceMock>(TASKS_PRISMA);
   });
 
   it("should be defined", () => {

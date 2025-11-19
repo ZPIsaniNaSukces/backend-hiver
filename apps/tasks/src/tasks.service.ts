@@ -76,7 +76,7 @@ export class TasksService {
     const task = await this.prisma.task.findUnique({ where: { id } });
 
     if (task == null) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
+      throw new NotFoundException(`Task with ID ${String(id)} not found`);
     }
 
     // Verify assignee exists if provided
@@ -116,7 +116,7 @@ export class TasksService {
     const task = await this.prisma.task.findUnique({ where: { id } });
 
     if (task == null) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
+      throw new NotFoundException(`Task with ID ${String(id)} not found`);
     }
 
     return await this.prisma.task.delete({ where: { id } });
@@ -168,7 +168,7 @@ export class TasksService {
 
   async findByStatus(
     status: TASK_STATUS,
-    user: AuthenticatedUser,
+    _user: AuthenticatedUser,
   ): Promise<Task[]> {
     return await this.prisma.task.findMany({
       where: { status },
