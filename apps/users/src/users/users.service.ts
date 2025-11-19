@@ -1,19 +1,25 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { toAuthenticatedUserResponse } from "@app/auth";
+import type { RegistrationResult } from "@app/contracts/users";
 import {
+  CompleteRegistrationDto,
   CreateUserDto,
   UpdateUserDto,
   UserCreatedEventDto,
   UserUpdatedEventDto,
   UsersMessageTopic,
 } from "@app/contracts/users";
+import { MailService } from "@app/mail";
 import { PrismaService } from "@app/prisma";
+import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
 import {
   Inject,
   Injectable,
+  Logger,
+  NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
 } from "@nestjs/common";
@@ -21,8 +27,10 @@ import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
 export class UsersService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
     @Inject("USERS_KAFKA") private readonly kafka: ClientKafka,
   ) {}
 
@@ -40,11 +48,12 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     const data: Prisma.UserUncheckedCreateInput & {
       teams?: { connect: { id: number }[] };
     } = {
-      name: createUserDto.name,
-      surname: createUserDto.surname,
+      name: createUserDto.name ?? null,
+      surname: createUserDto.surname ?? null,
       email: createUserDto.email,
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
+      dateOfBirth: createUserDto.dateOfBirth ?? null,
       role: createUserDto.role,
       bossId:
         createUserDto.bossId != null && createUserDto.bossId > 0
@@ -109,6 +118,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       email: updateUserDto.email,
       password: hashedPassword,
       phone: updateUserDto.phone ?? null,
+      dateOfBirth: updateUserDto.dateOfBirth ?? null,
       role: updateUserDto.role,
       bossId:
         updateUserDto.bossId != null && updateUserDto.bossId > 0
@@ -118,6 +128,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         updateUserDto.companyId != null && updateUserDto.companyId > 0
           ? updateUserDto.companyId
           : undefined,
+      accountStatus: updateUserDto.accountStatus,
     };
 
     if (updateUserDto.teamIds != null) {
@@ -149,5 +160,96 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       include: { teams: { select: { id: true } } },
     });
     return toAuthenticatedUserResponse(user);
+  }
+
+  async register(
+    email: string,
+    companyId: number,
+    bossId: number,
+  ): Promise<RegistrationResult> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser !== null) {
+      return {
+        success: false,
+        message: "User with this email already exists.",
+      };
+    }
+
+    const randomPassword = generatePassword();
+
+    const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+    await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        companyId,
+        bossId,
+        role: "EMPLOYEE",
+        accountStatus: "UNVERIFIED",
+      },
+    });
+    if (process.env.ENVIRONMENT_TYPE === "development") {
+      this.logger.debug(
+        `PASSWORD GENERATED: ${randomPassword}, HASHED: ${hashedPassword}`,
+      );
+    }
+    try {
+      await this.mailService.sendWelcomeEmail(email, randomPassword);
+      this.logger.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to send welcome email to ${email}, but user was created. Error: ${errorMessage}`,
+      );
+      //what if email fails? what do we do
+    }
+
+    return {
+      success: true,
+      message: "User registered successfully.",
+      temporaryPassword:
+        process.env.ENVIRONMENT_TYPE === "development"
+          ? randomPassword
+          : undefined, //TODO: remove temporary password from response in production
+    };
+  }
+
+  async completeRegistration(
+    userId: number,
+    completeRegistrationDto: CompleteRegistrationDto,
+  ): Promise<AuthenticatedUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user == null) {
+      throw new NotFoundException("User not found");
+    }
+
+    //hash new password if provided
+    const hashedPassword =
+      completeRegistrationDto.password === undefined
+        ? undefined
+        : await bcrypt.hash(completeRegistrationDto.password, 12);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: completeRegistrationDto.name,
+        surname: completeRegistrationDto.surname,
+        phone: completeRegistrationDto.phone ?? null,
+        dateOfBirth: completeRegistrationDto.dateOfBirth ?? null,
+        password: hashedPassword,
+        accountStatus: "VERIFIED",
+      },
+      include: { teams: { select: { id: true } } },
+    });
+
+    return toAuthenticatedUserResponse(updatedUser);
   }
 }

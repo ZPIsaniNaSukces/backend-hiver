@@ -1,4 +1,4 @@
-import { USER_ROLE } from "@prisma/client";
+import { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 
 import { toAuthenticatedUserResponse } from "./to-authenticated-user-response";
 
@@ -11,10 +11,12 @@ describe("toAuthenticatedUserResponse", () => {
       email: "alice@example.com",
       role: USER_ROLE.ADMIN,
       phone: "555-123",
+      dateOfBirth: null,
       bossId: 3,
       companyId: 7,
       teams: [{ id: 1 }, { id: 2 }],
       password: "should-be-ignored",
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
 
     expect(result).toEqual({
@@ -24,9 +26,11 @@ describe("toAuthenticatedUserResponse", () => {
       email: "alice@example.com",
       role: USER_ROLE.ADMIN,
       phone: "555-123",
+      dateOfBirth: null,
       bossId: 3,
       teamIds: [1, 2],
       companyId: 7,
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
     expect(
       (result as unknown as Record<string, unknown>).password,
@@ -41,9 +45,11 @@ describe("toAuthenticatedUserResponse", () => {
       email: "bob@example.com",
       role: USER_ROLE.EMPLOYEE,
       phone: null,
+      dateOfBirth: null,
       bossId: null,
       companyId: 5,
       teams: [],
+      accountStatus: ACCOUNT_STATUS.UNVERIFIED,
     });
 
     expect(result).toEqual({
@@ -53,9 +59,11 @@ describe("toAuthenticatedUserResponse", () => {
       email: "bob@example.com",
       role: USER_ROLE.EMPLOYEE,
       phone: null,
+      dateOfBirth: null,
       bossId: null,
       teamIds: [],
       companyId: 5,
+      accountStatus: ACCOUNT_STATUS.UNVERIFIED,
     });
   });
 });

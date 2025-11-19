@@ -1,5 +1,11 @@
-import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
-import { CreateUserDto, UpdateUserDto } from "@app/contracts/users";
+import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import type { RegistrationResult } from "@app/contracts/users";
+import {
+  CompleteRegistrationDto,
+  CreateUserDto,
+  RegisterUserDto,
+  UpdateUserDto,
+} from "@app/contracts/users";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -26,6 +32,19 @@ export class UsersController {
     return await this.usersService.create(createUserDto);
   }
 
+  @Post("register")
+  @Roles(USER_ROLE.ADMIN)
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+    @CurrentUser("id") authUserId: number,
+  ): Promise<RegistrationResult> {
+    return await this.usersService.register(
+      registerUserDto.email,
+      registerUserDto.companyId,
+      registerUserDto.bossId ?? authUserId,
+    );
+  }
+
   @Get()
   async findAll() {
     return await this.usersService.findAll();
@@ -41,6 +60,21 @@ export class UsersController {
   async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
     updateUserDto.id = id;
     return await this.usersService.update(id, updateUserDto);
+  }
+
+  @Patch(":id/complete-registration")
+  async completeRegistration(
+    @Param("id") id: number,
+    @Body() completeRegistrationDto: CompleteRegistrationDto,
+    @CurrentUser("id") authUserId: number,
+  ) {
+    if (id !== authUserId) {
+      throw new Error("You can only complete your own registration");
+    }
+    return await this.usersService.completeRegistration(
+      id,
+      completeRegistrationDto,
+    );
   }
 
   @Delete(":id")

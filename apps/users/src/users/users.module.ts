@@ -1,3 +1,4 @@
+import { MailModule } from "@app/mail";
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
@@ -9,6 +10,7 @@ import { UsersService } from "../users/users.service";
 @Module({
   imports: [
     PrismaModule,
+    MailModule,
     ClientsModule.register([
       {
         name: "USERS_KAFKA",

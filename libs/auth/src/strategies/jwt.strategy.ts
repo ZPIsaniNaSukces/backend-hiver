@@ -1,3 +1,4 @@
+import { ACCOUNT_STATUS } from "@prisma/client";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 import { Injectable, UnauthorizedException } from "@nestjs/common";
@@ -35,9 +36,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       role: payload.role,
       phone: payload.phone ?? null,
+      dateOfBirth: null, // JWT doesn't contain dateOfBirth
       bossId: payload.bossId ?? null,
       teamIds: payload.teamIds,
       companyId: payload.companyId,
+      accountStatus: ACCOUNT_STATUS.VERIFIED, // Assume verified if they have a valid token
     } satisfies AuthenticatedUser;
   }
 }

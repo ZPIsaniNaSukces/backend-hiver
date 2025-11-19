@@ -3,15 +3,17 @@ import type { AuthenticatedUser } from "../interfaces/authenticated-user.type";
 // Minimal user shape required to build an AuthenticatedUser response
 export interface UserWithTeamsForAuth {
   id: number;
-  name: string;
-  surname: string;
+  name: string | null;
+  surname: string | null;
   email: string;
   role: AuthenticatedUser["role"];
   phone: string | null;
+  dateOfBirth: Date | null;
   bossId: number | null;
   companyId: number;
   teams: { id: number }[];
   password?: string | null;
+  accountStatus: AuthenticatedUser["accountStatus"];
 }
 
 export function toAuthenticatedUserResponse(
@@ -26,8 +28,10 @@ export function toAuthenticatedUserResponse(
     email: user.email,
     role: user.role,
     phone: user.phone ?? null,
+    dateOfBirth: user.dateOfBirth ?? null,
     bossId,
     teamIds: user.teams.map((t) => t.id),
     companyId: user.companyId,
+    accountStatus: user.accountStatus,
   } satisfies AuthenticatedUser;
 }

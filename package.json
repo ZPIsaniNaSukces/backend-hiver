@@ -58,6 +58,8 @@
       "^@app/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
       "^@app/contracts(|/.*)$": "<rootDir>/libs/contracts/src/$1",
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
+      "^@app/utils(|/.*)$": "<rootDir>/libs/utils/src/$1",
+      "^@app/mail(|/.*)$": "<rootDir>/libs/mail/src/$1",
       "^@generated/presence(|/.*)$": "<rootDir>/generated/prisma/presence-client/$1",
       "^@generated/leave-requests(|/.*)$": "<rootDir>/generated/prisma/leave-requests-client/$1",
       "^@generated/tasks(|/.*)$": "<rootDir>/generated/prisma/tasks-client/$1"
@@ -74,6 +76,7 @@
     }
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -87,6 +90,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "kafkajs": "^2.2.4",
+    "nodemailer": "^7.0.10",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
@@ -105,6 +109,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.18.11",
+    "@types/nodemailer": "^7.0.3",
     "@types/passport": "^1.0.16",
     "@types/passport-jwt": "^3.0.9",
     "@types/supertest": "^6.0.2",

@@ -9,11 +9,11 @@ import {
 } from "@nestjs/common";
 import { RpcException } from "@nestjs/microservices";
 
-interface ErrorResponse {
+type ErrorResponse = {
   statusCode: number;
   message: string;
   error: string;
-}
+};
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaExceptionFilter implements ExceptionFilter {
