@@ -19,6 +19,10 @@ export class CompleteRegistrationDto {
 
   @IsOptional()
   @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
   @MinLength(8)
   password?: string; //user can change the generated default password
 }

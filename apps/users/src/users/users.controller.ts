@@ -6,6 +6,7 @@ import {
   RegisterUserDto,
   UpdateUserDto,
 } from "@app/contracts/users";
+import { PaginatedSearchQueryDto } from "@app/pagination";
 import { USER_ROLE } from "@prisma/client";
 
 import {
@@ -16,6 +17,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 
@@ -46,8 +48,8 @@ export class UsersController {
   }
 
   @Get()
-  async findAll() {
-    return await this.usersService.findAll();
+  async findAll(@Query() query: PaginatedSearchQueryDto) {
+    return await this.usersService.findAll(query);
   }
 
   @Get(":id")

@@ -10,7 +10,16 @@ import {
   UsersMessageTopic,
 } from "@app/contracts/users";
 import { MailService } from "@app/mail";
+import type {
+  PaginatedResponse,
+  PaginatedSearchQueryDto,
+} from "@app/pagination";
+import {
+  createPaginatedResponse,
+  getPaginationParameters,
+} from "@app/pagination";
 import { PrismaService } from "@app/prisma";
+import { buildSearchWhere } from "@app/search";
 import { generatePassword } from "@app/utils";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
@@ -54,6 +63,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       password: hashedPassword,
       phone: createUserDto.phone ?? null,
       dateOfBirth: createUserDto.dateOfBirth ?? null,
+      title: createUserDto.title ?? null,
       role: createUserDto.role,
       bossId:
         createUserDto.bossId != null && createUserDto.bossId > 0
@@ -83,11 +93,37 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     return toAuthenticatedUserResponse(user);
   }
 
-  async findAll(): Promise<AuthenticatedUser[]> {
-    const users = await this.prisma.user.findMany({
-      include: { teams: { select: { id: true } } },
-    });
-    return users.map((user) => toAuthenticatedUserResponse(user));
+  async findAll(
+    query: PaginatedSearchQueryDto,
+  ): Promise<PaginatedResponse<AuthenticatedUser>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const { skip, take } = getPaginationParameters(page, limit);
+
+    // Build search filter for name, surname, and email fields
+    const searchWhere = buildSearchWhere(query.search, [
+      "name",
+      "surname",
+      "email",
+    ]);
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: searchWhere,
+        skip,
+        take,
+        include: { teams: { select: { id: true } } },
+      }),
+      this.prisma.user.count({
+        where: searchWhere,
+      }),
+    ]);
+
+    const authenticatedUsers = users.map((user) =>
+      toAuthenticatedUserResponse(user),
+    );
+
+    return createPaginatedResponse(authenticatedUsers, total, page, limit);
   }
 
   async findOne(id: number): Promise<AuthenticatedUser | null> {
@@ -119,6 +155,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       password: hashedPassword,
       phone: updateUserDto.phone ?? null,
       dateOfBirth: updateUserDto.dateOfBirth ?? null,
+      title: updateUserDto.title ?? null,
       role: updateUserDto.role,
       bossId:
         updateUserDto.bossId != null && updateUserDto.bossId > 0
@@ -244,6 +281,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         surname: completeRegistrationDto.surname,
         phone: completeRegistrationDto.phone ?? null,
         dateOfBirth: completeRegistrationDto.dateOfBirth ?? null,
+        title: completeRegistrationDto.title ?? null,
         password: hashedPassword,
         accountStatus: "VERIFIED",
       },

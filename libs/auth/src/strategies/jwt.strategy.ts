@@ -37,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: payload.role,
       phone: payload.phone ?? null,
       dateOfBirth: null, // JWT doesn't contain dateOfBirth
+      title: payload.title ?? null,
       bossId: payload.bossId ?? null,
       teamIds: payload.teamIds,
       companyId: payload.companyId,

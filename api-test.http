@@ -106,6 +106,50 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/users
 Authorization: Bearer {{accessToken}}
 
+### Get all users - paginated (default: page=1, limit=10)
+GET {{baseUrl}}/users?page=1&limit=10
+Authorization: Bearer {{accessToken}}
+
+### Get all users - page 1 with limit 2
+GET {{baseUrl}}/users?page=1&limit=2
+Authorization: Bearer {{accessToken}}
+
+### Get all users - page 2 with limit 2
+GET {{baseUrl}}/users?page=2&limit=2
+Authorization: Bearer {{accessToken}}
+
+### Search users - by name (case-insensitive)
+GET {{baseUrl}}/users?search=Alice
+Authorization: Bearer {{accessToken}}
+
+### Search users - by surname
+GET {{baseUrl}}/users?search=Admin
+Authorization: Bearer {{accessToken}}
+
+### Search users - by email
+GET {{baseUrl}}/users?search=globex
+Authorization: Bearer {{accessToken}}
+
+### Search users - with pagination (search + limit)
+GET {{baseUrl}}/users?search=a&limit=2
+Authorization: Bearer {{accessToken}}
+
+### Search users - partial match
+GET {{baseUrl}}/users?search=mar
+Authorization: Bearer {{accessToken}}
+
+### Search users - no results
+GET {{baseUrl}}/users?search=nonexistent
+Authorization: Bearer {{accessToken}}
+
+### Search + Pagination - page 1
+GET {{baseUrl}}/users?search=a&page=1&limit=1
+Authorization: Bearer {{accessToken}}
+
+### Search + Pagination - page 2
+GET {{baseUrl}}/users?search=a&page=2&limit=1
+Authorization: Bearer {{accessToken}}
+
 ### Get user by id
 GET {{baseUrl}}/users/{{userId}}
 Authorization: Bearer {{accessToken}}
