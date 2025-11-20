@@ -80,7 +80,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
 
     const user = await this.prisma.user.create({
       data,
-      include: { teams: { select: { id: true } } },
+      include: { teams: { select: { id: true, name: true } } },
     });
     // Publish user created event for other services
     const createdEvent: UserCreatedEventDto = {
@@ -112,7 +112,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         where: searchWhere,
         skip,
         take,
-        include: { teams: { select: { id: true } } },
+        include: { teams: { select: { id: true, name: true } } },
       }),
       this.prisma.user.count({
         where: searchWhere,
@@ -129,7 +129,17 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
   async findOne(id: number): Promise<AuthenticatedUser | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { teams: { select: { id: true } } },
+      include: {
+        teams: { select: { id: true, name: true } },
+        subordinates: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+          },
+        },
+      },
     });
     if (user == null) {
       return null;
@@ -178,7 +188,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     const user = await this.prisma.user.update({
       where: { id },
       data,
-      include: { teams: { select: { id: true } } },
+      include: { teams: { select: { id: true, name: true } } },
     });
     // Publish user updated event
     const updatedEvent: UserUpdatedEventDto = {
@@ -194,7 +204,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
   async remove(id: number): Promise<AuthenticatedUser> {
     const user = await this.prisma.user.delete({
       where: { id },
-      include: { teams: { select: { id: true } } },
+      include: { teams: { select: { id: true, name: true } } },
     });
     return toAuthenticatedUserResponse(user);
   }
@@ -285,7 +295,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         password: hashedPassword,
         accountStatus: "VERIFIED",
       },
-      include: { teams: { select: { id: true } } },
+      include: { teams: { select: { id: true, name: true } } },
     });
 
     return toAuthenticatedUserResponse(updatedUser);

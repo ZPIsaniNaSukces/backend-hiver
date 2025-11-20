@@ -23,6 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       typeof payload.name === "string" &&
       typeof payload.surname === "string" &&
       Array.isArray(payload.teamIds) &&
+      Array.isArray(payload.teams) &&
       typeof payload.companyId === "number";
 
     if (!hasRequiredFields) {
@@ -40,6 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       title: payload.title ?? null,
       bossId: payload.bossId ?? null,
       teamIds: payload.teamIds,
+      teams: payload.teams,
       companyId: payload.companyId,
       accountStatus: ACCOUNT_STATUS.VERIFIED, // Assume verified if they have a valid token
     } satisfies AuthenticatedUser;

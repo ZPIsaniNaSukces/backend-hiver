@@ -82,7 +82,7 @@ describe("UsersService", () => {
         where: undefined,
         skip: 0,
         take: 10,
-        include: { teams: { select: { id: true } } },
+        include: { teams: { select: { id: true, name: true } } },
       });
       expect(prismaServiceMock.user.count).toHaveBeenCalledWith({
         where: undefined,
@@ -128,7 +128,7 @@ describe("UsersService", () => {
         where: expectedWhere,
         skip: 0,
         take: 10,
-        include: { teams: { select: { id: true } } },
+        include: { teams: { select: { id: true, name: true } } },
       });
       expect(prismaServiceMock.user.count).toHaveBeenCalledWith({
         where: expectedWhere,

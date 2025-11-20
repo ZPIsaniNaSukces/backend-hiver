@@ -11,6 +11,7 @@ export type JwtPayload = {
   bossId: number | null;
   companyId: number;
   teamIds: number[];
+  teams: { id: number; name: string }[];
   accountStatus: ACCOUNT_STATUS;
   iat?: number;
   exp?: number;

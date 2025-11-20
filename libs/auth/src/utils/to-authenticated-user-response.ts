@@ -12,7 +12,13 @@ export interface UserWithTeamsForAuth {
   title: string | null;
   bossId: number | null;
   companyId: number;
-  teams: { id: number }[];
+  teams: { id: number; name: string }[];
+  subordinates?: {
+    id: number;
+    name: string | null;
+    surname: string | null;
+    email: string;
+  }[];
   password?: string | null;
   accountStatus: AuthenticatedUser["accountStatus"];
 }
@@ -33,6 +39,8 @@ export function toAuthenticatedUserResponse(
     title: user.title ?? null,
     bossId,
     teamIds: user.teams.map((t) => t.id),
+    teams: user.teams,
+    subordinates: user.subordinates,
     companyId: user.companyId,
     accountStatus: user.accountStatus,
   } satisfies AuthenticatedUser;

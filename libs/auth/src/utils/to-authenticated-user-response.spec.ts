@@ -15,7 +15,10 @@ describe("toAuthenticatedUserResponse", () => {
       title: null,
       bossId: 3,
       companyId: 7,
-      teams: [{ id: 1 }, { id: 2 }],
+      teams: [
+        { id: 1, name: "Team A" },
+        { id: 2, name: "Team B" },
+      ],
       password: "should-be-ignored",
       accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
@@ -31,6 +34,10 @@ describe("toAuthenticatedUserResponse", () => {
       title: null,
       bossId: 3,
       teamIds: [1, 2],
+      teams: [
+        { id: 1, name: "Team A" },
+        { id: 2, name: "Team B" },
+      ],
       companyId: 7,
       accountStatus: ACCOUNT_STATUS.VERIFIED,
     });
@@ -66,6 +73,7 @@ describe("toAuthenticatedUserResponse", () => {
       title: null,
       bossId: null,
       teamIds: [],
+      teams: [],
       companyId: 5,
       accountStatus: ACCOUNT_STATUS.UNVERIFIED,
     });
