@@ -53,8 +53,4 @@ export class CreateUserDto {
   @Type(() => Number)
   @IsInt({ each: true })
   teamIds?: number[];
-
-  @Type(() => Number)
-  @IsInt()
-  companyId!: number;
 }

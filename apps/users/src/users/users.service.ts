@@ -51,7 +51,10 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     await this.kafka.close();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<AuthenticatedUser> {
+  async create(
+    createUserDto: CreateUserDto,
+    companyId: number,
+  ): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
     const data: Prisma.UserUncheckedCreateInput & {
@@ -69,7 +72,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         createUserDto.bossId != null && createUserDto.bossId > 0
           ? createUserDto.bossId
           : null,
-      companyId: createUserDto.companyId,
+      companyId,
     };
 
     if (createUserDto.teamIds != null && createUserDto.teamIds.length > 0) {
@@ -171,10 +174,6 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         updateUserDto.bossId != null && updateUserDto.bossId > 0
           ? updateUserDto.bossId
           : null,
-      companyId:
-        updateUserDto.companyId != null && updateUserDto.companyId > 0
-          ? updateUserDto.companyId
-          : undefined,
       accountStatus: updateUserDto.accountStatus,
     };
 

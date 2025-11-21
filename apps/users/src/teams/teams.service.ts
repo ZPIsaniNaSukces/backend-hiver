@@ -12,11 +12,50 @@ export class TeamsService {
   }
 
   async findAll() {
-    return this.prisma.team.findMany();
+    return this.prisma.team.findMany({
+      include: {
+        leader: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        _count: { select: { users: true } },
+      },
+    });
   }
 
   async findOne(id: number) {
-    return this.prisma.team.findUnique({ where: { id } });
+    return this.prisma.team.findUnique({
+      where: { id },
+      include: {
+        leader: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        users: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        _count: { select: { users: true } },
+      },
+    });
   }
 
   async update(id: number, updateTeamDto: UpdateTeamDto) {

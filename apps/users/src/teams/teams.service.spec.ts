@@ -38,4 +38,53 @@ describe("TeamsService", () => {
     expect(service).toBeDefined();
     expect(prismaService).toBeDefined();
   });
+
+  it("should find all teams with leader and user count", async () => {
+    await service.findAll();
+    expect(prismaServiceMock.team.findMany).toHaveBeenCalledWith({
+      include: {
+        leader: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        _count: { select: { users: true } },
+      },
+    });
+  });
+
+  it("should find one team with leader, users and count", async () => {
+    await service.findOne(1);
+    expect(prismaServiceMock.team.findUnique).toHaveBeenCalledWith({
+      where: { id: 1 },
+      include: {
+        leader: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        users: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            role: true,
+            title: true,
+          },
+        },
+        _count: { select: { users: true } },
+      },
+    });
+  });
 });
