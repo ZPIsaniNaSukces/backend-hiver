@@ -33,6 +33,16 @@ async function main() {
     },
   });
 
+  // Additional Globex Tag (User Request)
+  await prisma.nfcTag.create({
+    data: {
+      uid: "042C6632A91190",
+      name: "Biuro Elka Żelka",
+      companyId: 2,
+      aesKey: "globex-secret-key-042C6632A91190",
+    },
+  });
+
   // Seed CheckinUserInfo for users
   // Based on users seed: Alice (id: 1, companyId: 1), Martin (id: 2, companyId: 1, boss: Alice), Eve (id: 3, companyId: 2)
   await prisma.checkinUserInfo.create({
