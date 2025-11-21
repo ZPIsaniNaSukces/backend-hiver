@@ -5,20 +5,20 @@ import { NestFactory } from "@nestjs/core";
 import { Transport } from "@nestjs/microservices";
 import type { MicroserviceOptions } from "@nestjs/microservices";
 
-import { LeaveRequestsAppModule } from "./leave-requests-app.module";
+import { RequestsAppModule } from "./requests-app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(LeaveRequestsAppModule);
+  const app = await NestFactory.create(RequestsAppModule);
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
-        clientId: "leave-requests-service",
+        clientId: "requests-service",
         brokers: [process.env.KAFKA_BROKER ?? "kafka:9092"],
       },
       consumer: {
-        groupId: "leave-requests-service-consumer",
+        groupId: "requests-service-consumer",
       },
     },
   });

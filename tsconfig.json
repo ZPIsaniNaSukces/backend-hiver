@@ -38,10 +38,8 @@
       "@app/search/*": ["libs/search/src/*"],
       "@generated/presence": ["generated/prisma/presence-client"],
       "@generated/presence/*": ["generated/prisma/presence-client/*"],
-      "@generated/leave-requests": ["generated/prisma/leave-requests-client"],
-      "@generated/leave-requests/*": [
-        "generated/prisma/leave-requests-client/*"
-      ],
+      "@generated/requests": ["generated/prisma/requests-client"],
+      "@generated/requests/*": ["generated/prisma/requests-client/*"],
       "@generated/tasks": ["generated/prisma/tasks-client"],
       "@generated/tasks/*": ["generated/prisma/tasks-client/*"]
     }
