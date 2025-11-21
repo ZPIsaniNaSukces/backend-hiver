@@ -35,8 +35,8 @@ jobs:
         run: npx prisma generate --schema=prisma/presence/schema.prisma
         if: always()
 
-      - name: Run Prisma Generate (Leave Requests)
-        run: npx prisma generate --schema=prisma/leave-requests/schema.prisma
+      - name: Run Prisma Generate (Requests)
+        run: npx prisma generate --schema=prisma/requests/schema.prisma
         if: always()
 
       - name: Run Prisma Generate (Tasks)
