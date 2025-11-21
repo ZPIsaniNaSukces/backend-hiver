@@ -15,7 +15,7 @@ async function main() {
       id: 1, // Alice Admin
       bossId: null,
       companyId: 1, // Acme Corp
-      availableLeaveDays: 20,
+      availableLeaveHours: 160,
     },
   });
 
@@ -24,7 +24,7 @@ async function main() {
       id: 2, // Martin Manager
       bossId: 1, // Reports to Alice
       companyId: 1, // Acme Corp
-      availableLeaveDays: 20,
+      availableLeaveHours: 160,
     },
   });
 
@@ -33,7 +33,7 @@ async function main() {
       id: 3, // Eve Employee
       bossId: null,
       companyId: 2, // Globex
-      availableLeaveDays: 20,
+      availableLeaveHours: 160,
     },
   });
 

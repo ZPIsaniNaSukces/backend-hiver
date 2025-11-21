@@ -1,4 +1,5 @@
 import {
+  AvailabilityType,
   CreateAvailabilityRequestDto,
   CreateGeneralRequestDto,
   CreateRequestUserInfoDto,
@@ -26,6 +27,20 @@ export class RequestsService {
   ): Promise<AvailabilityRequest> {
     const { userId, date, hours, type } = dto;
 
+    // Check for existing request on same date
+    const existingRequest = await this.prisma.availabilityRequest.findFirst({
+      where: {
+        userId,
+        date: new Date(date),
+      },
+    });
+
+    if (existingRequest !== null) {
+      throw new BadRequestException(
+        "Availability request for this date already exists",
+      );
+    }
+
     const userInfo = await this.prisma.requestUserInfo.findUnique({
       where: { id: userId },
     });
@@ -34,15 +49,41 @@ export class RequestsService {
       throw new BadRequestException("RequestUserInfo not found for user");
     }
 
-    // Optional: Check for existing request on same date?
-    // Optional: Logic for VACATION deduction (skipped for now as per simplified requirements)
+    // Cast type to unknown first to avoid enum overlap issues in strict TS mode if generated types drift
+    if (type === AvailabilityType.VACATION) {
+      if (userInfo.availableLeaveHours < hours) {
+        throw new BadRequestException("Insufficient available leave hours");
+      }
+
+      return await this.prisma.$transaction(async (tx) => {
+        // Decrement available leave hours
+        await tx.requestUserInfo.update({
+          where: { id: userId },
+          data: {
+            availableLeaveHours: {
+              decrement: hours,
+            },
+          },
+        });
+
+        return await tx.availabilityRequest.create({
+          data: {
+            userId,
+            date: new Date(date),
+            hours,
+            type: AVAILABILITY_TYPE[type],
+            status: "PENDING",
+          },
+        });
+      });
+    }
 
     return await this.prisma.availabilityRequest.create({
       data: {
         userId,
         date: new Date(date),
         hours,
-        type: type as unknown as AVAILABILITY_TYPE,
+        type: AVAILABILITY_TYPE[type],
         status: "PENDING",
       },
     });
@@ -88,13 +129,37 @@ export class RequestsService {
     id: number,
     rejectorId: number,
   ): Promise<AvailabilityRequest> {
-    return await this.prisma.availabilityRequest.update({
+    const request = await this.prisma.availabilityRequest.findUnique({
       where: { id },
-      data: {
-        status: "REJECTED",
-        approvedById: rejectorId,
-        acceptedRejectedAt: new Date(),
-      },
+    });
+
+    if (request === null) {
+      throw new BadRequestException("Availability request not found");
+    }
+
+    return await this.prisma.$transaction(async (tx) => {
+      if (
+        request.type === AVAILABILITY_TYPE.VACATION &&
+        request.status !== "REJECTED"
+      ) {
+        await tx.requestUserInfo.update({
+          where: { id: request.userId },
+          data: {
+            availableLeaveHours: {
+              increment: request.hours,
+            },
+          },
+        });
+      }
+
+      return await tx.availabilityRequest.update({
+        where: { id },
+        data: {
+          status: "REJECTED",
+          approvedById: rejectorId,
+          acceptedRejectedAt: new Date(),
+        },
+      });
     });
   }
 
@@ -144,7 +209,7 @@ export class RequestsService {
         id: event.id,
         bossId: event.bossId ?? null,
         companyId: event.companyId,
-        availableLeaveDays: 20,
+        availableLeaveHours: 160, // Default to 160 hours (20 days * 8 hours)
       },
     });
   }

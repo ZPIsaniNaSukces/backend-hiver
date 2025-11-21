@@ -25,7 +25,7 @@ model RequestUserInfo {
   id                 Int  @id
   bossId             Int?
   companyId          Int
-  availableLeaveDays Int  @default(20)
+  availableLeaveHours Int  @default(160)
 
   availabilityRequests AvailabilityRequest[]
   generalRequests      GeneralRequest[]

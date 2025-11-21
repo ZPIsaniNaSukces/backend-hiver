@@ -15,5 +15,5 @@ export class CreateRequestUserInfoDto {
 
   @IsInt()
   @IsOptional()
-  availableLeaveDays?: number;
+  availableLeaveHours?: number;
 }

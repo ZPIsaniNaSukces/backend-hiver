@@ -14,6 +14,7 @@ describe("RequestsService", () => {
   const prismaServiceMock = {
     availabilityRequest: {
       create: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -56,12 +57,17 @@ describe("RequestsService", () => {
 
   it("creates RequestUserInfo on user created event", async () => {
     const payload: UserCreatedEventDto = { id: 10, bossId: 3, companyId: 1 };
-    const created = { id: 10, bossId: 3, companyId: 1, availableLeaveDays: 20 };
+    const created = {
+      id: 10,
+      bossId: 3,
+      companyId: 1,
+      availableLeaveHours: 160,
+    };
     prismaServiceMock.requestUserInfo.create.mockResolvedValue(created);
 
     const result = await service.handleUserCreated(payload);
     expect(prismaServiceMock.requestUserInfo.create).toHaveBeenCalledWith({
-      data: { id: 10, bossId: 3, companyId: 1, availableLeaveDays: 20 },
+      data: { id: 10, bossId: 3, companyId: 1, availableLeaveHours: 160 },
     });
     expect(result).toEqual(created);
   });
