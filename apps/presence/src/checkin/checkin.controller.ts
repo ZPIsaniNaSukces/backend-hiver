@@ -13,7 +13,11 @@ import {
 
 import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 
-import { CheckinService } from "./checkin.service";
+import {
+  CheckinService,
+  CheckinStatusResponse,
+  CheckinStatusWithHistoryResponse,
+} from "./checkin.service";
 
 @Controller("checkincheckout")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +30,7 @@ export class CheckinController {
   async checkinCheckout(
     @Body() dto: CheckinCheckoutDto,
     @CurrentUser() user: AuthenticatedUser,
-  ) {
+  ): Promise<CheckinStatusResponse> {
     return await this.checkinService.checkinCheckout(dto, user);
   }
 
@@ -34,7 +38,7 @@ export class CheckinController {
   async getStatus(
     @Query() query: GetCheckinStatusDto,
     @CurrentUser() user: AuthenticatedUser,
-  ) {
+  ): Promise<CheckinStatusWithHistoryResponse> {
     return await this.checkinService.getLastStatus(query.userId, user);
   }
 }
