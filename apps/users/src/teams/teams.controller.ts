@@ -1,4 +1,5 @@
-import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import type { AuthenticatedUser } from "@app/auth";
+import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
 import { CreateTeamDto, UpdateTeamDto } from "@app/contracts/teams";
 import { USER_ROLE } from "@prisma/client";
 
@@ -8,8 +9,8 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Put,
   UseGuards,
 } from "@nestjs/common";
 
@@ -22,8 +23,11 @@ export class TeamsController {
 
   @Post()
   @Roles(USER_ROLE.ADMIN)
-  async create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamsService.create(createTeamDto);
+  async create(
+    @Body() createTeamDto: CreateTeamDto,
+    @CurrentUser() admin: AuthenticatedUser,
+  ) {
+    return this.teamsService.create(createTeamDto, admin.companyId);
   }
 
   @Get()
@@ -36,11 +40,14 @@ export class TeamsController {
     return this.teamsService.findOne(id);
   }
 
-  @Patch(":id")
+  @Put(":id")
   @Roles(USER_ROLE.ADMIN)
-  async update(@Param("id") id: number, @Body() updateTeamDto: UpdateTeamDto) {
-    updateTeamDto.id = id;
-    return this.teamsService.update(id, updateTeamDto);
+  async replaceMembers(
+    @Param("id") id: number,
+    @Body() updateTeamDto: UpdateTeamDto,
+    @CurrentUser() admin: AuthenticatedUser,
+  ) {
+    return this.teamsService.update(id, updateTeamDto, admin.companyId);
   }
 
   @Delete(":id")

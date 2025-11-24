@@ -57,9 +57,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
   ): Promise<AuthenticatedUser> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
-    const data: Prisma.UserUncheckedCreateInput & {
-      teams?: { connect: { id: number }[] };
-    } = {
+    const data: Prisma.UserUncheckedCreateInput = {
       name: createUserDto.name ?? null,
       surname: createUserDto.surname ?? null,
       email: createUserDto.email,
@@ -74,12 +72,6 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
           : null,
       companyId,
     };
-
-    if (createUserDto.teamIds != null && createUserDto.teamIds.length > 0) {
-      data.teams = {
-        connect: createUserDto.teamIds.map((teamId) => ({ id: teamId })),
-      };
-    }
 
     const user = await this.prisma.user.create({
       data,
@@ -159,9 +151,7 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         ? undefined
         : await bcrypt.hash(updateUserDto.password, 12);
 
-    const data: Prisma.UserUncheckedUpdateInput & {
-      teams?: { set?: { id: number }[]; connect?: { id: number }[] };
-    } = {
+    const data: Prisma.UserUncheckedUpdateInput = {
       name: updateUserDto.name,
       surname: updateUserDto.surname,
       email: updateUserDto.email,
@@ -176,13 +166,6 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
           : null,
       accountStatus: updateUserDto.accountStatus,
     };
-
-    if (updateUserDto.teamIds != null) {
-      data.teams = {
-        set: [],
-        connect: updateUserDto.teamIds.map((teamId) => ({ id: teamId })),
-      };
-    }
 
     const user = await this.prisma.user.update({
       where: { id },
