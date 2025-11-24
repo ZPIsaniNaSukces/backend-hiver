@@ -6,63 +6,120 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  commitlint:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
       - name: Check commit name
-        if: github.event_name == 'pull_request'
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
 
-      - name: Run Prisma Generate (Users)
-        run: npx prisma generate --schema=prisma/users/schema.prisma
-        if: always()
-
-      - name: Run Prisma Generate (Presence)
-        run: npx prisma generate --schema=prisma/presence/schema.prisma
-        if: always()
-
-      - name: Run Prisma Generate (Requests)
-        run: npx prisma generate --schema=prisma/requests/schema.prisma
-        if: always()
-
-      - name: Run Prisma Generate (Tasks)
-        run: npx prisma generate --schema=prisma/tasks/schema.prisma
-        if: always()
-
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
       - name: Run prettier
         run: npm run format:check
-        if: always()
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prisma Generate
+        run: npm run prisma:generate
       - name: Run Lint
         run: npm run lint
-        if: always()
 
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prisma Generate
+        run: npm run prisma:generate
       - name: Check types
         run: npm run typecheck
-        if: always()
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prisma Generate
+        run: npm run prisma:generate
       - name: Run tests
         run: npm test
-        if: always()
 
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prisma Generate
+        run: npm run prisma:generate
       - name: Run e2e tests
         run: npm run test:e2e
-        if: always()
 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Prisma Generate
+        run: npm run prisma:generate
       - name: Build
         run: npm run build
-        if: always()
