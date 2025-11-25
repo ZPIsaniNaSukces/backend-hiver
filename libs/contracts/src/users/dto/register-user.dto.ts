@@ -5,10 +5,6 @@ export class RegisterUserDto {
   @IsEmail()
   email!: string;
 
-  @Type(() => Number)
-  @IsInt()
-  companyId!: number;
-
   @IsOptional()
   @Type(() => Number)
   @IsInt()

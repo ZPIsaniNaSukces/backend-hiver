@@ -38,7 +38,7 @@ export class AuthService {
         bossId: true,
         companyId: true,
         accountStatus: true,
-        teams: { select: { id: true } },
+        teams: { select: { id: true, name: true } },
       },
     });
 
@@ -127,7 +127,7 @@ export class AuthService {
         bossId: true,
         companyId: true,
         accountStatus: true,
-        teams: { select: { id: true } },
+        teams: { select: { id: true, name: true } },
       },
     });
 
@@ -230,6 +230,7 @@ export class AuthService {
       bossId: user.bossId,
       companyId: user.companyId,
       teamIds: user.teamIds,
+      teams: user.teams,
       accountStatus: user.accountStatus,
     } satisfies JwtPayload;
   }

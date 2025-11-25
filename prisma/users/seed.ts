@@ -1,4 +1,4 @@
-import { PrismaClient, USER_ROLE } from "@prisma/client";
+import { ACCOUNT_STATUS, PrismaClient, USER_ROLE } from "@prisma/client";
 import type { Company, Team } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
@@ -42,6 +42,8 @@ async function main() {
   }
 
   // Users covering all roles
+  // We create them sequentially to handle boss relations if needed later,
+  // but for simplicity we just create them and then optionally link them.
   const usersData = [
     {
       name: "Alice",
@@ -51,6 +53,8 @@ async function main() {
       role: USER_ROLE.ADMIN,
       companyName: "Acme Corp",
       teamName: "Engineering",
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
+      title: "CTO",
     },
     {
       name: "Martin",
@@ -60,6 +64,8 @@ async function main() {
       role: USER_ROLE.MANAGER,
       companyName: "Acme Corp",
       teamName: "Sales",
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
+      title: "Sales Director",
     },
     {
       name: "Eve",
@@ -69,6 +75,8 @@ async function main() {
       role: USER_ROLE.EMPLOYEE,
       companyName: "Globex",
       teamName: "Engineering",
+      accountStatus: ACCOUNT_STATUS.VERIFIED,
+      title: "Junior Developer",
     },
   ];
 
@@ -82,7 +90,7 @@ async function main() {
     );
     const hashed = await hashPassword(u.password);
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: u.name,
         surname: u.surname,
@@ -90,6 +98,8 @@ async function main() {
         password: hashed,
         role: u.role,
         companyId: company.id,
+        title: u.title,
+        accountStatus: u.accountStatus,
         teams:
           team === undefined
             ? undefined
@@ -98,6 +108,22 @@ async function main() {
               },
       },
     });
+
+    // Assign Martin as leader of Sales if applicable
+    if (u.role === USER_ROLE.MANAGER && team?.name === "Sales") {
+      await prisma.team.update({
+        where: { id: team.id },
+        data: { leaderId: user.id },
+      });
+    }
+
+    // Assign Alice as leader of Engineering
+    if (u.role === USER_ROLE.ADMIN && team?.name === "Engineering") {
+      await prisma.team.update({
+        where: { id: team.id },
+        data: { leaderId: user.id },
+      });
+    }
   }
 
   console.warn("Seeding finished.");

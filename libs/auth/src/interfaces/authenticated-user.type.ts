@@ -11,6 +11,13 @@ export type AuthenticatedUser = {
   title: string | null;
   bossId: number | null;
   teamIds: number[];
+  teams: { id: number; name: string }[];
+  subordinates?: {
+    id: number;
+    name: string | null;
+    surname: string | null;
+    email: string;
+  }[];
   companyId: number;
   accountStatus: ACCOUNT_STATUS;
 };

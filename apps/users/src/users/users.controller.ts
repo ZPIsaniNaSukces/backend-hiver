@@ -1,3 +1,4 @@
+import type { AuthenticatedUser } from "@app/auth";
 import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
 import type { RegistrationResult } from "@app/contracts/users";
 import {
@@ -30,20 +31,23 @@ export class UsersController {
 
   @Post()
   @Roles(USER_ROLE.ADMIN)
-  async create(@Body() createUserDto: CreateUserDto) {
-    return await this.usersService.create(createUserDto);
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentUser() admin: AuthenticatedUser,
+  ) {
+    return await this.usersService.create(createUserDto, admin.companyId);
   }
 
   @Post("register")
   @Roles(USER_ROLE.ADMIN)
   async register(
     @Body() registerUserDto: RegisterUserDto,
-    @CurrentUser("id") authUserId: number,
+    @CurrentUser() admin: AuthenticatedUser,
   ): Promise<RegistrationResult> {
     return await this.usersService.register(
       registerUserDto.email,
-      registerUserDto.companyId,
-      registerUserDto.bossId ?? authUserId,
+      admin.companyId,
+      registerUserDto.bossId ?? admin.id,
     );
   }
 

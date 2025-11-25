@@ -44,7 +44,7 @@ describe("AuthService", () => {
     phone: "123456789",
     bossId: null,
     companyId: 3,
-    teams: [{ id: 2 }],
+    teams: [{ id: 2, name: "Team A" }],
     title: null,
     accountStatus: ACCOUNT_STATUS.VERIFIED,
   } as const;
@@ -102,6 +102,7 @@ describe("AuthService", () => {
         title: null,
         bossId: validUserRecord.bossId,
         teamIds: [2],
+        teams: [{ id: 2, name: "Team A" }],
         companyId: validUserRecord.companyId,
         accountStatus: ACCOUNT_STATUS.VERIFIED,
       });
@@ -172,6 +173,7 @@ describe("AuthService", () => {
         bossId: validUserRecord.bossId,
         companyId: validUserRecord.companyId,
         teamIds: [2],
+        teams: [{ id: 2, name: "Team A" }],
         title: null,
         accountStatus: ACCOUNT_STATUS.VERIFIED,
       } as const;
@@ -197,6 +199,7 @@ describe("AuthService", () => {
           title: null,
           bossId: validUserRecord.bossId,
           teamIds: [2],
+          teams: [{ id: 2, name: "Team A" }],
           companyId: validUserRecord.companyId,
           accountStatus: ACCOUNT_STATUS.VERIFIED,
         },
@@ -236,6 +239,7 @@ describe("AuthService", () => {
           bossId: validUserRecord.bossId,
           companyId: validUserRecord.companyId,
           teamIds: [2],
+          teams: [{ id: 2, name: "Team A" }],
         });
 
         prismaServiceMock.user.findUnique.mockResolvedValue(validUserRecord);
@@ -272,6 +276,7 @@ describe("AuthService", () => {
           bossId: validUserRecord.bossId,
           companyId: validUserRecord.companyId,
           teamIds: [2],
+          teams: [{ id: 2, name: "Team A" }],
           title: null,
           accountStatus: ACCOUNT_STATUS.VERIFIED,
         } as const;
@@ -305,6 +310,7 @@ describe("AuthService", () => {
             title: null,
             bossId: validUserRecord.bossId,
             teamIds: [2],
+            teams: [{ id: 2, name: "Team A" }],
             companyId: validUserRecord.companyId,
             accountStatus: ACCOUNT_STATUS.VERIFIED,
           },
