@@ -1,9 +1,11 @@
 import type { AuthenticatedUser } from "@app/auth";
 import { CheckinCheckoutDto } from "@app/contracts";
 import { CheckinDirection, CheckinType } from "@generated/presence";
+import type { Checkin, NfcTag } from "@generated/presence";
 import { USER_ROLE } from "@prisma/client";
 
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -15,11 +17,27 @@ import {
   PRESENCE_PRISMA,
   PresencePrismaClient,
 } from "../prisma/prisma.constants";
+import { CmacService, CmacVerificationError } from "./cmac.service";
 
 export interface CheckinStatusResponse {
   status: "success" | "error" | "idle";
   checkinDirection: CheckinDirection | null;
   checkInTime: string | null;
+}
+
+export interface CheckinHistoryEntry {
+  id: number;
+  type: CheckinType;
+  direction: CheckinDirection;
+  timestamp: string;
+  counter: number | null;
+  signature: string | null;
+  tagUid: string | null;
+}
+
+export interface CheckinStatusWithHistoryResponse
+  extends CheckinStatusResponse {
+  history: CheckinHistoryEntry[];
 }
 
 @Injectable()
@@ -28,6 +46,7 @@ export class CheckinService {
     @Inject(PRESENCE_PRISMA)
     private readonly prisma: PresencePrismaClient,
     private readonly nfcTagsService: NfcTagsService,
+    private readonly cmacService: CmacService,
   ) {}
 
   async checkinCheckout(
@@ -88,6 +107,31 @@ export class CheckinService {
 
     const type = dto.type ?? CheckinType.NFC;
 
+    if (type === CheckinType.NFC) {
+      if (dto.signature == null) {
+        throw new ForbiddenException("Signature is required for NFC check-ins");
+      }
+
+      try {
+        const isValid = this.cmacService.verifyMac({
+          uidHex: dto.tagUid,
+          counter: dto.counter,
+          macHex: dto.signature,
+          keyHex: tag.aesKey,
+        });
+
+        if (!isValid) {
+          throw new ForbiddenException("Invalid NFC signature");
+        }
+      } catch (error: unknown) {
+        if (error instanceof CmacVerificationError) {
+          throw new BadRequestException(error.message);
+        }
+
+        throw error;
+      }
+    }
+
     await this.prisma.checkin.create({
       data: {
         userId: dto.userId,
@@ -111,7 +155,7 @@ export class CheckinService {
   async getLastStatus(
     userId: number,
     user: AuthenticatedUser,
-  ): Promise<CheckinStatusResponse> {
+  ): Promise<CheckinStatusWithHistoryResponse> {
     if (user.role === USER_ROLE.EMPLOYEE && user.id !== userId) {
       throw new ForbiddenException(
         "Employees can only view their own presence status",
@@ -134,23 +178,45 @@ export class CheckinService {
       );
     }
 
-    const lastCheckin = await this.prisma.checkin.findFirst({
+    const historyRecords = await this.prisma.checkin.findMany({
       where: { userId },
+      include: { tag: true },
       orderBy: { timestamp: "desc" },
     });
+
+    const history = historyRecords.map((record) =>
+      this.mapHistoryEntry(record),
+    );
+    const lastCheckin = historyRecords.at(0);
 
     if (lastCheckin == null) {
       return {
         status: "idle",
         checkinDirection: null,
         checkInTime: null,
-      } satisfies CheckinStatusResponse;
+        history,
+      };
     }
 
     return {
       status: "success",
       checkinDirection: lastCheckin.direction,
       checkInTime: lastCheckin.timestamp.toISOString(),
-    } satisfies CheckinStatusResponse;
+      history,
+    };
+  }
+
+  private mapHistoryEntry(
+    record: Checkin & { tag: NfcTag | null },
+  ): CheckinHistoryEntry {
+    return {
+      id: record.id,
+      type: record.type,
+      direction: record.direction,
+      timestamp: record.timestamp.toISOString(),
+      counter: record.counter ?? null,
+      signature: record.signature ?? null,
+      tagUid: record.tag?.uid ?? null,
+    };
   }
 }
