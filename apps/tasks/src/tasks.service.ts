@@ -183,6 +183,9 @@ export class TasksService {
         id: event.id,
         bossId: event.bossId ?? null,
         companyId: event.companyId,
+        name: event.name ?? null,
+        lastName: event.lastName ?? null,
+        title: event.title ?? null,
       },
     });
   }
@@ -195,6 +198,15 @@ export class TasksService {
     }
     if (event.companyId !== undefined) {
       data.companyId = event.companyId;
+    }
+    if (event.name !== undefined) {
+      data.name = event.name;
+    }
+    if (event.lastName !== undefined) {
+      data.lastName = event.lastName;
+    }
+    if (event.title !== undefined) {
+      data.title = event.title;
     }
 
     await this.prisma.taskUserInfo.update({

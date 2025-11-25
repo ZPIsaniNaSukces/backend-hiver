@@ -27,6 +27,9 @@ model TaskUserInfo {
   id        Int @id
   bossId    Int?
   companyId Int
+  name      String?
+  lastName  String?
+  title     String?
 
   tasksReported Task[] @relation("TaskReporter")
   tasksAssigned Task[] @relation("TaskAssignee")

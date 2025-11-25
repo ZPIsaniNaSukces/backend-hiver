@@ -87,6 +87,9 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       id: user.id,
       bossId: user.bossId ?? null,
       companyId: user.companyId,
+      name: user.name ?? null,
+      lastName: user.surname ?? null,
+      title: user.title ?? null,
     };
     this.kafka.emit(UsersMessageTopic.CREATE, createdEvent);
 
@@ -185,6 +188,9 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       id: user.id,
       bossId: user.bossId ?? null,
       companyId: user.companyId,
+      name: user.name ?? null,
+      lastName: user.surname ?? null,
+      title: user.title ?? null,
     };
     this.kafka.emit(UsersMessageTopic.UPDATE, updatedEvent);
 
