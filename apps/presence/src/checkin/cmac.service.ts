@@ -95,7 +95,7 @@ export class CmacService {
       ? this.xorBuffers(blocks[n - 1], k1)
       : this.xorBuffers(this.padBlock(blocks[n - 1] ?? Buffer.alloc(0)), k2);
 
-    let x: Buffer<ArrayBufferLike> = Buffer.alloc(BLOCK_SIZE, 0);
+    let x: Buffer = Buffer.alloc(BLOCK_SIZE, 0);
 
     for (let index = 0; index < n - 1; index++) {
       x = this.encryptBlock(
