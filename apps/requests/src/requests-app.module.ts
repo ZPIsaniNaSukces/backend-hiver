@@ -4,26 +4,26 @@ import { PrismaModule } from "@app/prisma";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
-import { LeaveRequestsAppController } from "./leave-requests-app.controller";
-import { LeaveRequestsModule } from "./leave-requests/leave-requests.module";
 import {
-  LEAVE_REQUESTS_PRISMA,
-  LeaveRequestsPrismaClient,
+  REQUESTS_PRISMA,
+  RequestsPrismaClient,
 } from "./prisma/prisma.constants";
+import { RequestsAppController } from "./requests-app.controller";
+import { RequestsModule } from "./requests/requests.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule.forRoot({
-      provide: LEAVE_REQUESTS_PRISMA,
-      client: LeaveRequestsPrismaClient,
+      provide: REQUESTS_PRISMA,
+      client: RequestsPrismaClient,
       databaseUrlEnv: "LEAVE_REQUESTS_DATABASE_URL",
       global: true,
     }),
     AuthClientModule,
-    LeaveRequestsModule,
+    RequestsModule,
   ],
-  controllers: [LeaveRequestsAppController],
+  controllers: [RequestsAppController],
   providers: [],
 })
-export class LeaveRequestsAppModule {}
+export class RequestsAppModule {}

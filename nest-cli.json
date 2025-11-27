@@ -106,13 +106,13 @@
         "tsConfigPath": "apps/presence/tsconfig.app.json"
       }
     },
-    "leave-requests": {
+    "requests": {
       "type": "application",
-      "root": "apps/leave-requests",
+      "root": "apps/requests",
       "entryFile": "main",
-      "sourceRoot": "apps/leave-requests/src",
+      "sourceRoot": "apps/requests/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/leave-requests/tsconfig.app.json"
+        "tsConfigPath": "apps/requests/tsconfig.app.json"
       }
     }
   }

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/requests-client"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("LEAVE_REQUESTS_DATABASE_URL")
+}
+
+enum REQUEST_STATUS {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AVAILABILITY_TYPE {
+  VACATION
+  ONLINE_WORK
+  OFFLINE_WORK
+}
+
+model RequestUserInfo {
+  id                 Int  @id
+  bossId             Int?
+  companyId          Int
+  availableLeaveHours Int  @default(160)
+
+  availabilityRequests AvailabilityRequest[]
+  generalRequests      GeneralRequest[]
+  
+  approvedAvailabilityRequests AvailabilityRequest[] @relation("AvailabilityRequestApprover")
+  approvedGeneralRequests      GeneralRequest[]      @relation("GeneralRequestApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AvailabilityRequest {
+  id           Int               @id @default(autoincrement())
+  userId       Int
+  date         DateTime
+  hours        Int
+  type         AVAILABILITY_TYPE
+  status       REQUEST_STATUS    @default(PENDING)
+  approvedById Int?
+  acceptedRejectedAt DateTime?
+
+  user       RequestUserInfo  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvedBy RequestUserInfo? @relation("AvailabilityRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([status])
+}
+
+model GeneralRequest {
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  description  String
+  status       REQUEST_STATUS @default(PENDING)
+  approvedById Int?
+  acceptedRejectedAt DateTime?
+
+  user       RequestUserInfo  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvedBy RequestUserInfo? @relation("GeneralRequestApprover", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+

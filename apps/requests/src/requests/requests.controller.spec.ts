@@ -1,42 +1,48 @@
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 
-import { LEAVE_REQUESTS_PRISMA } from "../prisma/prisma.constants";
-import { LeaveRequestsController } from "./leave-requests.controller";
-import { LeaveRequestsService } from "./leave-requests.service";
+import { REQUESTS_PRISMA } from "../prisma/prisma.constants";
+import { RequestsController } from "./requests.controller";
+import { RequestsService } from "./requests.service";
 
-describe("LeaveRequestsController", () => {
-  let controller: LeaveRequestsController;
+describe("RequestsController", () => {
+  let controller: RequestsController;
   const prismaServiceMock = {
-    leaveRequest: {
+    availabilityRequest: {
       create: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
-    leaveRequestUserInfo: {
+    generalRequest: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    requestUserInfo: {
       create: jest.fn(),
       update: jest.fn(),
       findUnique: jest.fn(),
     },
-    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [LeaveRequestsController],
+      controllers: [RequestsController],
       providers: [
-        LeaveRequestsService,
+        RequestsService,
         {
-          provide: LEAVE_REQUESTS_PRISMA,
+          provide: REQUESTS_PRISMA,
           useValue: prismaServiceMock,
         },
       ],
     }).compile();
 
-    controller = module.get<LeaveRequestsController>(LeaveRequestsController);
+    controller = module.get<RequestsController>(RequestsController);
   });
 
   it("should be defined", () => {
