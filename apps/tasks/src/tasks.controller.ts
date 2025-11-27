@@ -1,4 +1,11 @@
-import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import {
+  CurrentUser,
+  HierarchyScoped,
+  HierarchyScopedGuard,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard,
+} from "@app/auth";
 import type { AuthenticatedUser } from "@app/auth";
 import { CreateTaskDto, UpdateTaskDto } from "@app/contracts/tasks";
 import { TASK_STATUS } from "@generated/tasks";
@@ -20,12 +27,17 @@ import {
 import { TasksService } from "./tasks.service";
 
 @Controller("tasks")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  @HierarchyScoped({
+    source: "body",
+    propertyPath: "assigneeId",
+    allowMissing: true,
+  })
   async create(
     @Body() createTaskDto: CreateTaskDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -65,6 +77,11 @@ export class TasksController {
 
   @Patch(":id")
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  @HierarchyScoped({
+    source: "body",
+    propertyPath: "assigneeId",
+    allowMissing: true,
+  })
   async update(
     @Param("id", ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,

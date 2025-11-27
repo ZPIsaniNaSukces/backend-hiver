@@ -1,4 +1,11 @@
-import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import {
+  CurrentUser,
+  HierarchyScoped,
+  HierarchyScopedGuard,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard,
+} from "@app/auth";
 import { UsersMessageTopic } from "@app/contracts";
 import {
   CreateAvailabilityRequestDto,
@@ -13,16 +20,18 @@ import { MessagePattern, Payload } from "@nestjs/microservices";
 import { RequestsService } from "./requests.service";
 
 @Controller("requests")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Post("availability")
+  @HierarchyScoped({ source: "body", propertyPath: "userId" })
   async createAvailabilityRequest(@Body() dto: CreateAvailabilityRequestDto) {
     return await this.requestsService.createAvailabilityRequest(dto);
   }
 
   @Post("general")
+  @HierarchyScoped({ source: "body", propertyPath: "userId" })
   async createGeneralRequest(@Body() dto: CreateGeneralRequestDto) {
     return await this.requestsService.createGeneralRequest(dto);
   }
