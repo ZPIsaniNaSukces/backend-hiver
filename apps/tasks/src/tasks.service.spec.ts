@@ -2,6 +2,7 @@ import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 
 import { TASKS_PRISMA } from "./prisma/prisma.constants";
+import { TasksHierarchyService } from "./tasks-hierarchy.service";
 import { TasksService } from "./tasks.service";
 
 describe("TasksService", () => {
@@ -10,13 +11,23 @@ describe("TasksService", () => {
   const prismaServiceMock = {
     task: {
       create: jest.fn(),
-      findAll: jest.fn(),
-      findOne: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
-      remove: jest.fn(),
-      findAssignedToUser: jest.fn(),
-      findReportedByUser: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
     },
+    taskUserInfo: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+  };
+
+  const hierarchyServiceMock = {
+    findUserInfo: jest.fn(),
+    isAboveInHierarchy: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -27,6 +38,10 @@ describe("TasksService", () => {
         {
           provide: TASKS_PRISMA,
           useValue: prismaServiceMock,
+        },
+        {
+          provide: TasksHierarchyService,
+          useValue: hierarchyServiceMock,
         },
       ],
     }).compile();

@@ -8,6 +8,7 @@ import {
 } from "@app/auth";
 import type { AuthenticatedUser } from "@app/auth";
 import { CreateTaskDto, UpdateTaskDto } from "@app/contracts/tasks";
+import { PaginationQueryDto } from "@app/pagination";
 import { TASK_STATUS } from "@generated/tasks";
 import { USER_ROLE } from "@prisma/client";
 
@@ -46,16 +47,17 @@ export class TasksController {
   }
 
   @Get()
-  async findAll() {
-    return await this.tasksService.findAll();
+  async findAll(@Query() query: PaginationQueryDto) {
+    return await this.tasksService.findAll(query);
   }
 
   @Get("status/:status")
   async findByStatus(
     @Param("status") status: TASK_STATUS,
+    @Query() query: PaginationQueryDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return await this.tasksService.findByStatus(status, user);
+    return await this.tasksService.findByStatus(status, query, user);
   }
 
   @Get("user/:userId")
@@ -73,6 +75,14 @@ export class TasksController {
   @Get(":id")
   async findOne(@Param("id", ParseIntPipe) id: number) {
     return await this.tasksService.findOne(id);
+  }
+
+  @Patch(":id/done")
+  async markAsDone(
+    @Param("id", ParseIntPipe) id: number,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.tasksService.markAsDone(id, user);
   }
 
   @Patch(":id")
