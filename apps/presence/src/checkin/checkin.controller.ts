@@ -2,6 +2,8 @@ import {
   CompanyScoped,
   CompanyScopedGuard,
   CurrentUser,
+  HierarchyScoped,
+  HierarchyScopedGuard,
   JwtAuthGuard,
   RolesGuard,
 } from "@app/auth";
@@ -21,12 +23,13 @@ import {
 } from "./checkin.service";
 
 @Controller("checkincheckout")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class CheckinController {
   constructor(private readonly checkinService: CheckinService) {}
 
   @Post()
   @CompanyScoped({ source: "body", propertyPath: "companyId" })
+  @HierarchyScoped({ source: "body", propertyPath: "userId" })
   @UseGuards(CompanyScopedGuard)
   async checkinCheckout(
     @Body() dto: CheckinCheckoutDto,
@@ -36,6 +39,11 @@ export class CheckinController {
   }
 
   @Get()
+  @HierarchyScoped({
+    source: "query",
+    propertyPath: "userId",
+    allowMissing: true,
+  })
   async getStatus(
     @Query() query: GetCheckinStatusDto,
     @CurrentUser() user: AuthenticatedUser,
