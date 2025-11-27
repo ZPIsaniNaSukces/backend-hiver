@@ -150,6 +150,12 @@ services:
           - DELETE
           - OPTIONS
         strip_path: false
+      - name: tasks-app-health
+        paths:
+          - /tasks-app/health
+        methods:
+          - GET
+        strip_path: false
 
 plugins:
   - name: cors
