@@ -17,6 +17,7 @@ import {
   CheckinService,
   CheckinStatusResponse,
   CheckinStatusWithHistoryResponse,
+  HourlyCheckinStat,
 } from "./checkin.service";
 
 @Controller("checkincheckout")
@@ -40,5 +41,12 @@ export class CheckinController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<CheckinStatusWithHistoryResponse> {
     return await this.checkinService.getLastStatus(query.userId, user);
+  }
+
+  @Get("stats")
+  async getStats(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<HourlyCheckinStat[]> {
+    return await this.checkinService.getHourlyStats(user.companyId);
   }
 }
