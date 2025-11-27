@@ -1,5 +1,12 @@
 import type { AuthenticatedUser } from "@app/auth";
-import { CurrentUser, JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import {
+  CurrentUser,
+  HierarchyScoped,
+  HierarchyScopedGuard,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard,
+} from "@app/auth";
 import type { RegistrationResult } from "@app/contracts/users";
 import {
   CompleteRegistrationDto,
@@ -25,7 +32,7 @@ import {
 import { UsersService } from "./users.service";
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -63,12 +70,14 @@ export class UsersController {
 
   @Patch(":id")
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  @HierarchyScoped({ source: "params", propertyPath: "id" })
   async update(@Param("id") id: number, @Body() updateUserDto: UpdateUserDto) {
     updateUserDto.id = id;
     return await this.usersService.update(id, updateUserDto);
   }
 
   @Patch(":id/complete-registration")
+  @HierarchyScoped({ source: "params", propertyPath: "id", allowSelf: true })
   async completeRegistration(
     @Param("id") id: number,
     @Body() completeRegistrationDto: CompleteRegistrationDto,
@@ -85,6 +94,7 @@ export class UsersController {
 
   @Delete(":id")
   @Roles(USER_ROLE.ADMIN)
+  @HierarchyScoped({ source: "params", propertyPath: "id" })
   async remove(@Param("id") id: number) {
     return await this.usersService.remove(id);
   }

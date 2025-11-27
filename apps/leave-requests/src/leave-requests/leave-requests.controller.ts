@@ -1,4 +1,10 @@
-import { JwtAuthGuard, Roles, RolesGuard } from "@app/auth";
+import {
+  HierarchyScoped,
+  HierarchyScopedGuard,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard,
+} from "@app/auth";
 import { UsersMessageTopic } from "@app/contracts";
 import {
   CreateLeaveRequestDto,
@@ -22,11 +28,12 @@ import { MessagePattern, Payload } from "@nestjs/microservices";
 import { LeaveRequestsService } from "./leave-requests.service";
 
 @Controller("leave-requests")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class LeaveRequestsController {
   constructor(private readonly leaveRequestsService: LeaveRequestsService) {}
 
   @Post()
+  @HierarchyScoped({ source: "body", propertyPath: "userId" })
   async create(@Body() createLeaveRequestDto: CreateLeaveRequestDto) {
     return await this.leaveRequestsService.create(createLeaveRequestDto);
   }
@@ -44,6 +51,11 @@ export class LeaveRequestsController {
 
   @Patch(":id")
   @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  @HierarchyScoped({
+    source: "body",
+    propertyPath: "userId",
+    allowMissing: true,
+  })
   async update(
     @Param("id") id: number,
     @Body() updateLeaveRequestDto: UpdateLeaveRequestDto,

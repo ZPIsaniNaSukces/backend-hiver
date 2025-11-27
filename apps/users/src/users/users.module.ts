@@ -1,9 +1,11 @@
+import { HIERARCHY_SERVICE } from "@app/auth";
 import { MailModule } from "@app/mail";
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 
+import { UsersHierarchyService } from "../users/users-hierarchy.service";
 import { UsersController } from "../users/users.controller";
 import { UsersService } from "../users/users.service";
 
@@ -29,6 +31,13 @@ import { UsersService } from "../users/users.service";
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [
+    UsersService,
+    UsersHierarchyService,
+    {
+      provide: HIERARCHY_SERVICE,
+      useExisting: UsersHierarchyService,
+    },
+  ],
 })
 export class UsersModule {}
