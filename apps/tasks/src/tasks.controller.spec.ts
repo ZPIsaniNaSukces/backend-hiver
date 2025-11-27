@@ -16,6 +16,8 @@ describe("TasksController", () => {
     remove: jest.fn(),
     findAssignedToUser: jest.fn(),
     findReportedByUser: jest.fn(),
+    findByStatus: jest.fn(),
+    markAsDone: jest.fn(),
   };
 
   beforeEach(async () => {
