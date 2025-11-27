@@ -40,6 +40,12 @@ export interface CheckinStatusWithHistoryResponse
   history: CheckinHistoryEntry[];
 }
 
+export interface HourlyCheckinStat {
+  hour: string;
+  count: number;
+  isCurrentHour: boolean;
+}
+
 @Injectable()
 export class CheckinService {
   constructor(
@@ -218,5 +224,64 @@ export class CheckinService {
       signature: record.signature ?? null,
       tagUid: record.tag?.uid ?? null,
     };
+  }
+
+  async getHourlyStats(companyId: number): Promise<HourlyCheckinStat[]> {
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const checkins = await this.prisma.checkin.findMany({
+      where: {
+        companyId,
+        timestamp: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      select: {
+        userId: true,
+        direction: true,
+        timestamp: true,
+      },
+      orderBy: { timestamp: "asc" },
+    });
+
+    const stats: HourlyCheckinStat[] = [];
+
+    for (let hour = 7; hour <= 17; hour++) {
+      const hourEnd = new Date(now);
+      hourEnd.setHours(hour, 59, 59, 999);
+
+      // Track last direction per user up to this hour
+      const userLastDirection = new Map<number, CheckinDirection>();
+
+      for (const checkin of checkins) {
+        if (checkin.timestamp <= hourEnd) {
+          userLastDirection.set(checkin.userId, checkin.direction);
+        }
+      }
+
+      // Count users whose last action was IN
+      let presentCount = 0;
+      for (const direction of userLastDirection.values()) {
+        if (direction === CheckinDirection.IN) {
+          presentCount++;
+        }
+      }
+
+      stats.push({
+        hour: `${hour.toString().padStart(2, "0")}:00`,
+        count: presentCount,
+        isCurrentHour: hour === currentHour,
+      });
+    }
+
+    return stats;
   }
 }
