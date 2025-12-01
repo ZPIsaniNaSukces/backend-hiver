@@ -189,6 +189,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+      mailhog:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "netstat -an | grep 3005 > /dev/null || exit 1"]
       interval: 10s
@@ -209,7 +211,7 @@ services:
       - /kong/run:exec,mode=777
     environment:
       KONG_PREFIX: /kong/run
-      KONG_DATABASE: off
+      KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
@@ -234,6 +236,16 @@ services:
         condition: service_healthy
       notifications:
         condition: service_healthy
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: unless-stopped
+    networks:
+      - hiver-net
+    ports:
+      - "1025:1025" #smtp
+      - "8025:8025" #web
 
 networks:
   hiver-net:

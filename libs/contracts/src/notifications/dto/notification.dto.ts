@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
-import { NotificationType } from "./enums";
+import { NotificationType } from "../enums";
 
 export class SendNotificationDto {
   @IsNotEmpty()

@@ -82,6 +82,8 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       id: user.id,
       bossId: user.bossId ?? null,
       companyId: user.companyId,
+      email: user.email,
+      phone: user.phone ?? null,
     };
     this.kafka.emit(UsersMessageTopic.CREATE, createdEvent);
 

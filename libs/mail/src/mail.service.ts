@@ -68,6 +68,27 @@ export class MailService {
     }
   }
 
+  // @Natalia is this ok to add in this lib?
+  async sendGenericEmail(
+    to: string,
+    subject: string,
+    message: string,
+  ): Promise<void> {
+    try {
+      this.logger.log(`Attempting to send generic email to ${to}`);
+      await this.mailerService.sendMail({
+        to,
+        subject,
+        text: message,
+        html: `<p>${message.replaceAll("\n", "<br/>")}</p>`,
+      });
+      this.logger.log(`Generic email successfully sent to ${to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send generic email to ${to}`, error);
+      throw error;
+    }
+  }
+
   private loadTemplate(name: string): string {
     const templatePath = path.join(
       process.cwd(),
