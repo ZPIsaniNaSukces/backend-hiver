@@ -1,3 +1,4 @@
+import { MailModule } from "@app/mail";
 import { PrismaModule } from "@app/prisma";
 
 import { Module } from "@nestjs/common";
@@ -20,6 +21,7 @@ import {
       databaseUrlEnv: "NOTIFICATIONS_DATABASE_URL",
       global: true,
     }),
+    MailModule,
   ],
   controllers: [NotificationsController, NotificationsEventsController],
   providers: [NotificationsService],

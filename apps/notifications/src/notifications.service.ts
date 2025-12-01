@@ -2,10 +2,11 @@ import {
   NotificationStatus,
   NotificationType,
   SendNotificationDto,
-  UserCreatedNotificationEventDto,
-  UserRemovedNotificationEventDto,
-  UserUpdatedNotificationEventDto,
+  UserCreatedEventDto,
+  UserRemovedEventDto,
+  UserUpdatedEventDto,
 } from "@app/contracts";
+import { MailService } from "@app/mail";
 import type {
   Notification,
   NotificationUserInfo,
@@ -26,38 +27,71 @@ export class NotificationsService {
   constructor(
     @Inject(NOTIFICATIONS_PRISMA)
     private readonly prisma: NotificationsPrismaClient,
+    private readonly mailService: MailService,
   ) {}
 
   // User lifecycle event handlers
-  async handleUserCreated(
-    event: UserCreatedNotificationEventDto,
-  ): Promise<void> {
-    await this.prisma.notificationUserInfo.create({
-      data: {
-        id: event.id,
-        email: event.email,
-        phone: event.phone,
+  async handleUserCreated(event: UserCreatedEventDto): Promise<void> {
+    if (event.id == null || event.companyId == null) {
+      this.logger.error(
+        `UserCreatedEvent missing required fields: id=${String(event.id)} companyId=${String(event.companyId)}`,
+      );
+      return;
+    }
+
+    await this.prisma.notificationUserInfo.upsert({
+      where: { id: event.id },
+      update: {
         companyId: event.companyId,
+        email: event.email ?? null,
+        phone: event.phone ?? null,
+      },
+      create: {
+        id: event.id,
+        companyId: event.companyId,
+        email: event.email ?? null,
+        phone: event.phone ?? null,
         pushTokens: [],
       },
     });
 
-    this.logger.log(`User info created for user ${String(event.id)}`);
+    this.logger.log(
+      `User info upserted for user ${String(event.id)}${event.email ? ` with email ${event.email}` : ""}`,
+    );
+
+    if (event.email) {
+      try {
+        await this.mailService.sendGenericEmail(
+          event.email,
+          "Welcome to Hiver",
+          "Your account has been created successfully.",
+        );
+        this.logger.log(`Welcome email sent to ${event.email}`);
+      } catch (err) {
+        this.logger.error(
+          `Failed to send welcome email to ${event.email}`,
+          err instanceof Error ? err.stack : undefined,
+        );
+      }
+    }
   }
 
-  async handleUserUpdated(
-    event: UserUpdatedNotificationEventDto,
-  ): Promise<void> {
+  async handleUserUpdated(event: UserUpdatedEventDto): Promise<void> {
     const data: Prisma.NotificationUserInfoUpdateInput = {};
 
+    if (event.companyId !== undefined) {
+      data.companyId = event.companyId;
+    }
     if (event.email !== undefined) {
       data.email = event.email;
     }
     if (event.phone !== undefined) {
       data.phone = event.phone;
     }
-    if (event.companyId !== undefined) {
-      data.companyId = event.companyId;
+
+    // only update if there's something to update ~ Sun Tzu
+    if (Object.keys(data).length === 0) {
+      return;
     }
 
     await this.prisma.notificationUserInfo.update({
@@ -68,9 +102,7 @@ export class NotificationsService {
     this.logger.log(`User info updated for user ${String(event.id)}`);
   }
 
-  async handleUserRemoved(
-    event: UserRemovedNotificationEventDto,
-  ): Promise<void> {
+  async handleUserRemoved(event: UserRemovedEventDto): Promise<void> {
     await this.prisma.notificationUserInfo.delete({
       where: { id: event.id },
     });
@@ -98,7 +130,7 @@ export class NotificationsService {
         type: dto.type,
         subject: dto.subject,
         message: dto.message,
-        metadata: dto.metadata ?? {},
+        metadata: (dto.metadata ?? {}) as Prisma.InputJsonValue, // added cast, was causing error without it
         status: NotificationStatus.PENDING,
       },
     });
@@ -157,7 +189,11 @@ export class NotificationsService {
       `Sending email to ${userInfo.email}: ${notification.subject ?? "No subject"}`,
     );
 
-    // TODO: Implement email sending logic using @nestjs-modules/mailer
+    await this.mailService.sendGenericEmail(
+      userInfo.email,
+      notification.subject ?? "",
+      notification.message,
+    );
 
     this.logger.log(`Email sent successfully to ${userInfo.email}`);
   }
@@ -205,7 +241,9 @@ export class NotificationsService {
     });
 
     if (userInfo == null) {
-      throw new NotFoundException(`User info not found for user ${String(userId)}`);
+      throw new NotFoundException(
+        `User info not found for user ${String(userId)}`,
+      );
     }
 
     if (!userInfo.pushTokens.includes(token)) {
@@ -226,7 +264,9 @@ export class NotificationsService {
     });
 
     if (userInfo == null) {
-      throw new NotFoundException(`User info not found for user ${String(userId)}`);
+      throw new NotFoundException(
+        `User info not found for user ${String(userId)}`,
+      );
     }
 
     await this.prisma.notificationUserInfo.update({
