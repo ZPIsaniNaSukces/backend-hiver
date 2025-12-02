@@ -10,7 +10,6 @@ import {
   createPaginatedResponse,
   getPaginationParameters,
 } from "@app/pagination";
-import type { PaginatedResponse } from "@app/pagination";
 import type { Prisma, Task } from "@generated/tasks";
 import { TASK_STATUS } from "@generated/tasks";
 import { USER_ROLE } from "@prisma/client";
@@ -67,7 +66,7 @@ export class TasksService {
     return await this.prisma.task.create({ data });
   }
 
-  async findAll(query: PaginationQueryDto): Promise<PaginatedResponse<Task>> {
+  async findAll(query: PaginationQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const { skip, take } = getPaginationParameters(page, limit);
@@ -77,6 +76,10 @@ export class TasksService {
         skip,
         take,
         orderBy: { createdAt: "desc" },
+        include: {
+          assignee: true,
+          reporter: true,
+        },
       }),
       this.prisma.task.count(),
     ]);
@@ -84,8 +87,14 @@ export class TasksService {
     return createPaginatedResponse(tasks, total, page, limit);
   }
 
-  async findOne(id: number): Promise<Task | null> {
-    return await this.prisma.task.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        assignee: true,
+        reporter: true,
+      },
+    });
   }
 
   async update(
@@ -142,10 +151,7 @@ export class TasksService {
     return await this.prisma.task.delete({ where: { id } });
   }
 
-  async findAssignedToUser(
-    userId: number,
-    user: AuthenticatedUser,
-  ): Promise<Task[]> {
+  async findAssignedToUser(userId: number, user: AuthenticatedUser) {
     const userInfo = await this.prisma.taskUserInfo.findUnique({
       where: { id: userId },
     });
@@ -161,13 +167,14 @@ export class TasksService {
     return await this.prisma.task.findMany({
       where: { assigneeId: userId },
       orderBy: { createdAt: "desc" },
+      include: {
+        assignee: true,
+        reporter: true,
+      },
     });
   }
 
-  async findReportedByUser(
-    userId: number,
-    user: AuthenticatedUser,
-  ): Promise<Task[]> {
+  async findReportedByUser(userId: number, user: AuthenticatedUser) {
     const userInfo = await this.prisma.taskUserInfo.findUnique({
       where: { id: userId },
     });
@@ -183,6 +190,10 @@ export class TasksService {
     return await this.prisma.task.findMany({
       where: { reporterId: userId },
       orderBy: { createdAt: "desc" },
+      include: {
+        assignee: true,
+        reporter: true,
+      },
     });
   }
 
@@ -190,7 +201,7 @@ export class TasksService {
     status: TASK_STATUS,
     query: PaginationQueryDto,
     _user: AuthenticatedUser,
-  ): Promise<PaginatedResponse<Task>> {
+  ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const { skip, take } = getPaginationParameters(page, limit);
@@ -203,6 +214,10 @@ export class TasksService {
         skip,
         take,
         orderBy: { createdAt: "desc" },
+        include: {
+          assignee: true,
+          reporter: true,
+        },
       }),
       this.prisma.task.count({ where }),
     ]);

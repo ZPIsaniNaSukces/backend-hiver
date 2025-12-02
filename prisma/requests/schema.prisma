@@ -22,10 +22,13 @@ enum AVAILABILITY_TYPE {
 }
 
 model RequestUserInfo {
-  id                 Int  @id
-  bossId             Int?
-  companyId          Int
-  availableLeaveHours Int  @default(160)
+  id                  Int     @id
+  bossId              Int?
+  companyId           Int
+  availableLeaveHours Int     @default(160)
+  name                String?
+  lastName            String?
+  title               String?
 
   availabilityRequests AvailabilityRequest[]
   generalRequests      GeneralRequest[]

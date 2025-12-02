@@ -191,14 +191,15 @@ export class RequestsService {
     });
   }
 
-  async findAllAvailabilityRequests(user: {
-    id: number;
-    role: string | null;
-  }): Promise<AvailabilityRequest[]> {
+  async findAllAvailabilityRequests(user: { id: number; role: string | null }) {
     const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
 
     return await this.prisma.availabilityRequest.findMany({
       where: isAdminOrManager ? {} : { userId: user.id },
+      include: {
+        user: true,
+        approvedBy: true,
+      },
     });
   }
 
@@ -224,17 +225,35 @@ export class RequestsService {
         bossId: event.bossId ?? null,
         companyId: event.companyId,
         availableLeaveHours: 160, // Default to 160 hours (20 days * 8 hours)
+        name: event.name ?? null,
+        lastName: event.lastName ?? null,
+        title: event.title ?? null,
       },
     });
   }
 
   async handleUserUpdated(event: UserUpdatedEventDto): Promise<void> {
-    const data: { bossId?: number | null; companyId?: number } = {};
+    const data: {
+      bossId?: number | null;
+      companyId?: number;
+      name?: string | null;
+      lastName?: string | null;
+      title?: string | null;
+    } = {};
     if (event.bossId !== undefined) {
       data.bossId = event.bossId;
     }
     if (event.companyId !== undefined) {
       data.companyId = event.companyId;
+    }
+    if (event.name !== undefined) {
+      data.name = event.name;
+    }
+    if (event.lastName !== undefined) {
+      data.lastName = event.lastName;
+    }
+    if (event.title !== undefined) {
+      data.title = event.title;
     }
 
     await this.prisma.requestUserInfo.update({
