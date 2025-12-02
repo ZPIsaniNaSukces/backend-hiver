@@ -23,10 +23,38 @@ async function main() {
   // These would normally be created via Kafka events
   await prisma.taskUserInfo.createMany({
     data: [
-      { id: 1, bossId: null, companyId: 1 }, // Admin
-      { id: 2, bossId: 1, companyId: 1 }, // Manager
-      { id: 3, bossId: 2, companyId: 1 }, // Employee
-      { id: 4, bossId: 2, companyId: 1 }, // Employee
+      {
+        id: 1,
+        bossId: null,
+        companyId: 1,
+        name: "Alice",
+        lastName: "Admin",
+        title: "CTO",
+      },
+      {
+        id: 2,
+        bossId: 1,
+        companyId: 1,
+        name: "Mark",
+        lastName: "Manager",
+        title: "Engineering Manager",
+      },
+      {
+        id: 3,
+        bossId: 2,
+        companyId: 1,
+        name: "Eve",
+        lastName: "Engineer",
+        title: "Senior Developer",
+      },
+      {
+        id: 4,
+        bossId: 2,
+        companyId: 1,
+        name: "Sam",
+        lastName: "Specialist",
+        title: "Developer",
+      },
     ],
   });
 

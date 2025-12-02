@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional } from "class-validator";
+import { IsInt, IsOptional, IsString } from "class-validator";
 
 export class UserCreatedEventDto {
   @Type(() => Number)
@@ -14,4 +14,16 @@ export class UserCreatedEventDto {
   @Type(() => Number)
   @IsInt()
   companyId!: number;
+
+  @IsOptional()
+  @IsString()
+  name?: string | null;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  title?: string | null;
 }
