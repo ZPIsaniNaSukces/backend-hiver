@@ -37,15 +37,17 @@ export class RequestsController {
   }
 
   @Get("availability")
-  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
-  async findAllAvailability() {
-    return await this.requestsService.findAllAvailabilityRequests();
+  async findAllAvailability(
+    @CurrentUser() user: { id: number; role: USER_ROLE | null },
+  ) {
+    return await this.requestsService.findAllAvailabilityRequests(user);
   }
 
   @Get("general")
-  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
-  async findAllGeneral() {
-    return await this.requestsService.findAllGeneralRequests();
+  async findAllGeneral(
+    @CurrentUser() user: { id: number; role: USER_ROLE | null },
+  ) {
+    return await this.requestsService.findAllGeneralRequests(user);
   }
 
   @Post("availability/:id/approve")

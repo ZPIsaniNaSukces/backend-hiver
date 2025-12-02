@@ -191,12 +191,26 @@ export class RequestsService {
     });
   }
 
-  async findAllAvailabilityRequests(): Promise<AvailabilityRequest[]> {
-    return await this.prisma.availabilityRequest.findMany();
+  async findAllAvailabilityRequests(user: {
+    id: number;
+    role: string | null;
+  }): Promise<AvailabilityRequest[]> {
+    const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+
+    return await this.prisma.availabilityRequest.findMany({
+      where: isAdminOrManager ? {} : { userId: user.id },
+    });
   }
 
-  async findAllGeneralRequests(): Promise<GeneralRequest[]> {
-    return await this.prisma.generalRequest.findMany();
+  async findAllGeneralRequests(user: {
+    id: number;
+    role: string | null;
+  }): Promise<GeneralRequest[]> {
+    const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+
+    return await this.prisma.generalRequest.findMany({
+      where: isAdminOrManager ? {} : { userId: user.id },
+    });
   }
 
   // Event Handlers
