@@ -201,6 +201,9 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     email: string,
     companyId: number,
     bossId: number,
+    title: string,
+    name: string,
+    surname: string,
   ): Promise<RegistrationResult> {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -223,6 +226,9 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
         password: hashedPassword,
         companyId,
         bossId,
+        title,
+        name,
+        surname,
         role: "EMPLOYEE",
         accountStatus: "UNVERIFIED",
       },
@@ -275,11 +281,8 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        name: completeRegistrationDto.name,
-        surname: completeRegistrationDto.surname,
         phone: completeRegistrationDto.phone ?? null,
         dateOfBirth: completeRegistrationDto.dateOfBirth ?? null,
-        title: completeRegistrationDto.title ?? null,
         password: hashedPassword,
         accountStatus: "VERIFIED",
       },

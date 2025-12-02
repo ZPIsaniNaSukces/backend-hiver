@@ -55,6 +55,9 @@ export class UsersController {
       registerUserDto.email,
       admin.companyId,
       registerUserDto.bossId ?? admin.id,
+      registerUserDto.title,
+      registerUserDto.name,
+      registerUserDto.surname,
     );
   }
 
