@@ -5,8 +5,15 @@ import {
   UserRemovedEventDto,
   UserUpdatedEventDto,
 } from "@app/contracts/users";
+import {
+  PaginationQueryDto,
+  createPaginatedResponse,
+  getPaginationParameters,
+} from "@app/pagination";
+import type { PaginatedResponse } from "@app/pagination";
 import type { Prisma, Task } from "@generated/tasks";
 import { TASK_STATUS } from "@generated/tasks";
+import { USER_ROLE } from "@prisma/client";
 
 import {
   ForbiddenException,
@@ -16,12 +23,14 @@ import {
 } from "@nestjs/common";
 
 import { TASKS_PRISMA, TasksPrismaClient } from "./prisma/prisma.constants";
+import { TasksHierarchyService } from "./tasks-hierarchy.service";
 
 @Injectable()
 export class TasksService {
   constructor(
     @Inject(TASKS_PRISMA)
     private readonly prisma: TasksPrismaClient,
+    private readonly hierarchyService: TasksHierarchyService,
   ) {}
 
   async create(
@@ -58,10 +67,21 @@ export class TasksService {
     return await this.prisma.task.create({ data });
   }
 
-  async findAll(): Promise<Task[]> {
-    return await this.prisma.task.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResponse<Task>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const { skip, take } = getPaginationParameters(page, limit);
+
+    const [tasks, total] = await Promise.all([
+      this.prisma.task.findMany({
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.task.count(),
+    ]);
+
+    return createPaginatedResponse(tasks, total, page, limit);
   }
 
   async findOne(id: number): Promise<Task | null> {
@@ -168,12 +188,69 @@ export class TasksService {
 
   async findByStatus(
     status: TASK_STATUS,
+    query: PaginationQueryDto,
     _user: AuthenticatedUser,
-  ): Promise<Task[]> {
-    return await this.prisma.task.findMany({
-      where: { status },
-      orderBy: { createdAt: "desc" },
-    });
+  ): Promise<PaginatedResponse<Task>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const { skip, take } = getPaginationParameters(page, limit);
+
+    const where = { status };
+
+    const [tasks, total] = await Promise.all([
+      this.prisma.task.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.task.count({ where }),
+    ]);
+
+    return createPaginatedResponse(tasks, total, page, limit);
+  }
+
+  async markAsDone(id: number, user: AuthenticatedUser): Promise<Task> {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+
+    if (task == null) {
+      throw new NotFoundException(`Task with ID ${String(id)} not found`);
+    }
+
+    // ADMINs can always mark tasks as done
+    if (user.role === USER_ROLE.ADMIN) {
+      return await this.prisma.task.update({
+        where: { id },
+        data: { status: TASK_STATUS.DONE },
+      });
+    }
+
+    // Users can mark their own tasks (where they are the assignee) as done
+    if (task.assigneeId === user.id) {
+      return await this.prisma.task.update({
+        where: { id },
+        data: { status: TASK_STATUS.DONE },
+      });
+    }
+
+    // MANAGERs can mark tasks as done for users below them in hierarchy
+    if (user.role === USER_ROLE.MANAGER && task.assigneeId != null) {
+      const isAbove = await this.hierarchyService.isAboveInHierarchy(
+        user.id,
+        task.assigneeId,
+      );
+
+      if (isAbove) {
+        return await this.prisma.task.update({
+          where: { id },
+          data: { status: TASK_STATUS.DONE },
+        });
+      }
+    }
+
+    throw new ForbiddenException(
+      "You can only mark your own tasks as done, or tasks of users below you in the hierarchy",
+    );
   }
 
   // Kafka event handlers
