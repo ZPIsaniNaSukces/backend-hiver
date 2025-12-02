@@ -16,6 +16,9 @@ async function main() {
       bossId: null,
       companyId: 1, // Acme Corp
       availableLeaveHours: 160,
+      name: "Alice",
+      lastName: "Admin",
+      title: "CTO",
     },
   });
 
@@ -25,6 +28,9 @@ async function main() {
       bossId: 1, // Reports to Alice
       companyId: 1, // Acme Corp
       availableLeaveHours: 160,
+      name: "Martin",
+      lastName: "Manager",
+      title: "Sales Director",
     },
   });
 
@@ -34,6 +40,9 @@ async function main() {
       bossId: null,
       companyId: 2, // Globex
       availableLeaveHours: 160,
+      name: "Eve",
+      lastName: "Employee",
+      title: "Junior Developer",
     },
   });
 

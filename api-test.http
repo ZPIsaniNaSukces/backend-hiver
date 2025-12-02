@@ -232,38 +232,78 @@ Authorization: Bearer {{accessToken}}
 DELETE {{baseUrl}}/teams/{{teamId}}
 Authorization: Bearer {{accessToken}}
 
-### Create request
-POST {{baseUrl}}/requests
+### ==================== AVAILABILITY REQUESTS ====================
+
+### Create availability request (VACATION)
+POST {{baseUrl}}/requests/availability
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
   "userId": {{userId}},
-  "startsAt": "2025-11-01",
-  "endsAt": "2025-11-05",
-  "reason": "Vacation time",
-  "status": "PENDING"
+  "date": "2025-12-25",
+  "hours": 8,
+  "type": "VACATION"
 }
 
-### Get all requests
-GET {{baseUrl}}/requests
-Authorization: Bearer {{accessToken}}
-
-### Get request by id
-@requestId = 1
-GET {{baseUrl}}/requests/{{requestId}}
-Authorization: Bearer {{accessToken}}
-
-### Update request
-PATCH {{baseUrl}}/requests/{{requestId}}
+### Create availability request (ONLINE_WORK)
+POST {{baseUrl}}/requests/availability
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-  "status": "APPROVED",
-  "approvedBy": {{userId}}
+  "userId": {{userId}},
+  "date": "2025-12-26",
+  "hours": 4,
+  "type": "ONLINE_WORK"
 }
 
-### Delete request
-DELETE {{baseUrl}}/requests/{{requestId}}
+### Create availability request (OFFLINE_WORK)
+POST {{baseUrl}}/requests/availability
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "userId": {{userId}},
+  "date": "2025-12-27",
+  "hours": 8,
+  "type": "OFFLINE_WORK"
+}
+
+### Get all availability requests
+GET {{baseUrl}}/requests/availability
+Authorization: Bearer {{accessToken}}
+
+### Approve availability request
+@availabilityRequestId = 1
+POST {{baseUrl}}/requests/availability/{{availabilityRequestId}}/approve
+Authorization: Bearer {{accessToken}}
+
+### Reject availability request
+POST {{baseUrl}}/requests/availability/{{availabilityRequestId}}/reject
+Authorization: Bearer {{accessToken}}
+
+### ==================== GENERAL REQUESTS ====================
+
+### Create general request
+POST {{baseUrl}}/requests/general
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "userId": {{userId}},
+  "description": "Request for new equipment"
+}
+
+### Get all general requests
+GET {{baseUrl}}/requests/general
+Authorization: Bearer {{accessToken}}
+
+### Approve general request
+@generalRequestId = 1
+POST {{baseUrl}}/requests/general/{{generalRequestId}}/approve
+Authorization: Bearer {{accessToken}}
+
+### Reject general request
+POST {{baseUrl}}/requests/general/{{generalRequestId}}/reject
 Authorization: Bearer {{accessToken}}

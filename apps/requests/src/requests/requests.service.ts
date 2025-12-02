@@ -203,14 +203,15 @@ export class RequestsService {
     });
   }
 
-  async findAllGeneralRequests(user: {
-    id: number;
-    role: string | null;
-  }): Promise<GeneralRequest[]> {
+  async findAllGeneralRequests(user: { id: number; role: string | null }) {
     const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
 
     return await this.prisma.generalRequest.findMany({
       where: isAdminOrManager ? {} : { userId: user.id },
+      include: {
+        user: true,
+        approvedBy: true,
+      },
     });
   }
 
