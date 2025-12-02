@@ -17,7 +17,7 @@ import { RequestsModule } from "./requests/requests.module";
     PrismaModule.forRoot({
       provide: REQUESTS_PRISMA,
       client: RequestsPrismaClient,
-      databaseUrlEnv: "LEAVE_REQUESTS_DATABASE_URL",
+      databaseUrlEnv: "REQUESTS_DATABASE_URL",
       global: true,
     }),
     AuthClientModule,

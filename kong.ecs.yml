@@ -101,8 +101,8 @@ services:
           - GET
         strip_path: false
 
-  - name: leave-requests-service
-    host: leave-requests.hiver-dev.local
+  - name: requests-service
+    host: requests.hiver-dev.local
     port: 3002
     protocol: http
     connect_timeout: 60000
@@ -110,9 +110,9 @@ services:
     read_timeout: 60000
     retries: 0
     routes:
-      - name: leave-requests-route
+      - name: requests-route
         paths:
-          - /leave-requests
+          - /requests
         methods:
           - GET
           - POST
@@ -121,9 +121,9 @@ services:
           - DELETE
           - OPTIONS
         strip_path: false
-      - name: leave-requests-app-health
+      - name: requests-app-health
         paths:
-          - /leave-requests-app/health
+          - /requests-app/health
         methods:
           - GET
         strip_path: false

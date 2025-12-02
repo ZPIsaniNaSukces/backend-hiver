@@ -232,8 +232,8 @@ Authorization: Bearer {{accessToken}}
 DELETE {{baseUrl}}/teams/{{teamId}}
 Authorization: Bearer {{accessToken}}
 
-### Create leave request
-POST {{baseUrl}}/leave-requests
+### Create request
+POST {{baseUrl}}/requests
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -245,17 +245,17 @@ Authorization: Bearer {{accessToken}}
   "status": "PENDING"
 }
 
-### Get all leave requests
-GET {{baseUrl}}/leave-requests
+### Get all requests
+GET {{baseUrl}}/requests
 Authorization: Bearer {{accessToken}}
 
-### Get leave request by id
-@leaveRequestId = 1
-GET {{baseUrl}}/leave-requests/{{leaveRequestId}}
+### Get request by id
+@requestId = 1
+GET {{baseUrl}}/requests/{{requestId}}
 Authorization: Bearer {{accessToken}}
 
-### Update leave request
-PATCH {{baseUrl}}/leave-requests/{{leaveRequestId}}
+### Update request
+PATCH {{baseUrl}}/requests/{{requestId}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -264,6 +264,6 @@ Authorization: Bearer {{accessToken}}
   "approvedBy": {{userId}}
 }
 
-### Delete leave request
-DELETE {{baseUrl}}/leave-requests/{{leaveRequestId}}
+### Delete request
+DELETE {{baseUrl}}/requests/{{requestId}}
 Authorization: Bearer {{accessToken}}
