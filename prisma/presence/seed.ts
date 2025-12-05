@@ -1,8 +1,13 @@
+import { faker } from "@faker-js/faker/locale/pl";
+
 import { PrismaClient } from "../../generated/prisma/presence-client";
 import type {
   CheckinDirection,
   CheckinType,
+  NfcTag,
+  Prisma,
 } from "../../generated/prisma/presence-client";
+import { buildSeedUsers, seedCompanies } from "../shared/seed-data";
 
 const prisma = new PrismaClient();
 
@@ -13,169 +18,112 @@ async function main() {
   await prisma.$executeRaw`TRUNCATE TABLE "Checkin", "CheckinUserInfo", "NfcTag" RESTART IDENTITY CASCADE`;
 
   // Seed NFC Tags for companies
-  // Acme Corp (companyId: 1)
-  const acmeTag = await prisma.nfcTag.create({
-    data: {
-      uid: "04:A1:B2:C3:D4:E5:F6",
-      name: "Acme Main Entrance",
-      companyId: 1,
-      aesKey: "acme-secret-key-12345678901234567890",
-    },
-  });
+  const tags: NfcTag[] = [];
+  for (const company of seedCompanies) {
+    const tag = await prisma.nfcTag.create({
+      data: {
+        uid: faker.string.hexadecimal({ length: 14, prefix: "" }).toUpperCase(),
+        name: `${company.name} Main Entrance`,
+        companyId: company.id,
+        aesKey: faker.string.alphanumeric(32),
+      },
+    });
+    tags.push(tag);
 
-  // Globex (companyId: 2)
-  const globexTag = await prisma.nfcTag.create({
-    data: {
-      uid: "04:F6:E5:D4:C3:B2:A1",
-      name: "Globex Office Gate",
-      companyId: 2,
-      aesKey: "globex-secret-key-1234567890123456789",
-    },
-  });
+    // Add "Biuro Elka Żelka" tag to all companies
+    // Use specific UID for Company 2 (Globex) as requested, random for others to satisfy unique constraint
+    const isTargetCompany = company.id === 1;
+    const elkaTag = await prisma.nfcTag.create({
+      data: {
+        uid: isTargetCompany
+          ? "042C6632A91190"
+          : faker.string.hexadecimal({ length: 14, prefix: "" }).toUpperCase(),
+        name: "Biuro Elka Żelka",
+        companyId: company.id,
+        aesKey: isTargetCompany
+          ? "globex-secret-key-042C6632A91190"
+          : faker.string.alphanumeric(32),
+      },
+    });
+    tags.push(elkaTag);
+  }
 
-  // Additional Globex Tag (User Request)
-  await prisma.nfcTag.create({
-    data: {
-      uid: "042C6632A91190",
-      name: "Biuro Elka Żelka",
-      companyId: 2,
-      aesKey: "globex-secret-key-042C6632A91190",
-    },
-  });
+  const users = buildSeedUsers();
 
   // Seed CheckinUserInfo for users
-  // Based on users seed: Alice (id: 1, companyId: 1), Martin (id: 2, companyId: 1, boss: Alice), Eve (id: 3, companyId: 2)
-  await prisma.checkinUserInfo.create({
-    data: {
-      userId: 1, // Alice Admin
-      bossId: null,
-      companyId: 1, // Acme Corp
-    },
-  });
-
-  await prisma.checkinUserInfo.create({
-    data: {
-      userId: 2, // Martin Manager
-      bossId: 1, // Reports to Alice
-      companyId: 1, // Acme Corp
-    },
-  });
-
-  await prisma.checkinUserInfo.create({
-    data: {
-      userId: 3, // Eve Employee
-      bossId: null,
-      companyId: 2, // Globex
-    },
-  });
+  for (const u of users) {
+    await prisma.checkinUserInfo.create({
+      data: {
+        userId: u.id,
+        bossId: u.bossId,
+        companyId: u.companyId,
+      },
+    });
+  }
 
   // Seed some sample checkins
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const twoDaysAgo = new Date(now);
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const checkinsData: Prisma.CheckinCreateManyInput[] = [];
+  const today = new Date();
 
-  // Alice's checkins (Acme Corp)
-  await prisma.checkin.create({
-    data: {
-      userId: 1,
-      companyId: 1,
-      type: "NFC" as CheckinType,
-      direction: "IN" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(8, 0, 0, 0)),
-      tagId: acmeTag.id,
-      counter: 1,
-      signature: "alice-sig-1",
-    },
-  });
+  for (const user of users) {
+    const companyTag = tags.find((t) => t.companyId === user.companyId);
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!companyTag) {
+      continue;
+    }
 
-  await prisma.checkin.create({
-    data: {
-      userId: 1,
-      companyId: 1,
-      type: "NFC" as CheckinType,
-      direction: "OUT" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(17, 30, 0, 0)),
-      tagId: acmeTag.id,
-      counter: 2,
-      signature: "alice-sig-2",
-    },
-  });
+    // Generate checkins for the last 7 days
+    for (let index = 0; index < 7; index++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - index);
 
-  // Martin's checkins (Acme Corp)
-  await prisma.checkin.create({
-    data: {
-      userId: 2,
-      companyId: 1,
-      type: "ONLINE" as CheckinType,
-      direction: "IN" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(9, 15, 0, 0)),
-      counter: 1,
-    },
-  });
+      // Skip weekends randomly
+      if (
+        (date.getDay() === 0 || date.getDay() === 6) &&
+        faker.datatype.boolean()
+      ) {
+        continue;
+      }
 
-  await prisma.checkin.create({
-    data: {
-      userId: 2,
-      companyId: 1,
-      type: "ONLINE" as CheckinType,
-      direction: "OUT" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(18, 0, 0, 0)),
-      counter: 2,
-    },
-  });
+      // Random start time between 7:00 and 10:00
+      const startHour = faker.number.int({ min: 7, max: 10 });
+      const startMinute = faker.number.int({ min: 0, max: 59 });
+      const startTime = new Date(date);
+      startTime.setHours(startHour, startMinute, 0, 0);
 
-  // Eve's checkins (Globex)
-  await prisma.checkin.create({
-    data: {
-      userId: 3,
-      companyId: 2,
-      type: "NFC" as CheckinType,
-      direction: "IN" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(8, 30, 0, 0)),
-      tagId: globexTag.id,
-      counter: 1,
-      signature: "eve-sig-1",
-    },
-  });
+      // Random duration between 7 and 9 hours
+      const durationHours = faker.number.int({ min: 7, max: 9 });
+      const endTime = new Date(startTime);
+      endTime.setHours(startTime.getHours() + durationHours);
 
-  await prisma.checkin.create({
-    data: {
-      userId: 3,
-      companyId: 2,
-      type: "NFC" as CheckinType,
-      direction: "OUT" as CheckinDirection,
-      timestamp: new Date(yesterday.setHours(16, 45, 0, 0)),
-      tagId: globexTag.id,
-      counter: 2,
-      signature: "eve-sig-2",
-    },
-  });
+      // IN & OUT
+      checkinsData.push(
+        {
+          userId: user.id,
+          companyId: user.companyId,
+          type: "NFC" as CheckinType,
+          direction: "IN" as CheckinDirection,
+          timestamp: startTime,
+          tagId: companyTag.id,
+          counter: faker.number.int({ min: 1, max: 1000 }),
+          signature: faker.string.alphanumeric(16),
+        },
+        {
+          userId: user.id,
+          companyId: user.companyId,
+          type: "NFC" as CheckinType,
+          direction: "OUT" as CheckinDirection,
+          timestamp: endTime,
+          tagId: companyTag.id,
+          counter: faker.number.int({ min: 1001, max: 2000 }),
+          signature: faker.string.alphanumeric(16),
+        },
+      );
+    }
+  }
 
-  // Today's checkins
-  await prisma.checkin.create({
-    data: {
-      userId: 1,
-      companyId: 1,
-      type: "NFC" as CheckinType,
-      direction: "IN" as CheckinDirection,
-      timestamp: new Date(now.setHours(8, 5, 0, 0)),
-      tagId: acmeTag.id,
-      counter: 3,
-      signature: "alice-sig-3",
-    },
-  });
-
-  await prisma.checkin.create({
-    data: {
-      userId: 2,
-      companyId: 1,
-      type: "ONLINE" as CheckinType,
-      direction: "IN" as CheckinDirection,
-      timestamp: new Date(now.setHours(9, 0, 0, 0)),
-      counter: 3,
-    },
+  await prisma.checkin.createMany({
+    data: checkinsData,
   });
 
   console.warn("Seeding presence database finished.");
@@ -184,7 +132,8 @@ async function main() {
 main()
   .catch((error: unknown) => {
     console.error(error);
-    throw error;
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();

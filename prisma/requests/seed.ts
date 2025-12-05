@@ -1,4 +1,8 @@
+import { faker } from "@faker-js/faker/locale/pl";
+
+import type { Prisma } from "../../generated/prisma/requests-client";
 import { PrismaClient } from "../../generated/prisma/requests-client";
+import { buildSeedUsers } from "../shared/seed-data";
 
 const prisma = new PrismaClient();
 
@@ -8,74 +12,70 @@ async function main() {
   // Clear existing data and restart auto-incrementing identifiers
   await prisma.$executeRaw`TRUNCATE TABLE "AvailabilityRequest", "GeneralRequest", "RequestUserInfo" RESTART IDENTITY CASCADE`;
 
+  const users = buildSeedUsers();
+
   // Seed RequestUserInfo for users
-  // Based on users seed: Alice (id: 1, companyId: 1), Martin (id: 2, companyId: 1, boss: Alice), Eve (id: 3, companyId: 2)
-  await prisma.requestUserInfo.create({
-    data: {
-      id: 1, // Alice Admin
-      bossId: null,
-      companyId: 1, // Acme Corp
-      availableLeaveHours: 160,
-      name: "Alice",
-      lastName: "Admin",
-      title: "CTO",
-    },
-  });
-
-  await prisma.requestUserInfo.create({
-    data: {
-      id: 2, // Martin Manager
-      bossId: 1, // Reports to Alice
-      companyId: 1, // Acme Corp
-      availableLeaveHours: 160,
-      name: "Martin",
-      lastName: "Manager",
-      title: "Sales Director",
-    },
-  });
-
-  await prisma.requestUserInfo.create({
-    data: {
-      id: 3, // Eve Employee
-      bossId: null,
-      companyId: 2, // Globex
-      availableLeaveHours: 160,
-      name: "Eve",
-      lastName: "Employee",
-      title: "Junior Developer",
-    },
+  await prisma.requestUserInfo.createMany({
+    data: users.map((u) => ({
+      id: u.id,
+      bossId: u.bossId,
+      companyId: u.companyId,
+      availableLeaveHours: u.availableLeaveHours,
+      name: u.name,
+      lastName: u.surname,
+      title: u.title,
+    })),
   });
 
   // Seed some sample availability requests
-  await prisma.availabilityRequest.create({
-    data: {
-      userId: 2, // Martin
-      date: new Date("2025-12-20"),
-      hours: 8,
-      type: "VACATION",
-      status: "PENDING",
-    },
-  });
+  const availabilityRequests: Prisma.AvailabilityRequestCreateManyInput[] = [];
+  for (const user of users) {
+    // Randomly create 0-3 requests per user
+    const numberRequests = faker.number.int({ min: 0, max: 3 });
+    for (let index = 0; index < numberRequests; index++) {
+      const status = faker.helpers.arrayElement([
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+      ]);
+      const approvedById =
+        status === "APPROVED" || status === "REJECTED" ? user.bossId : null;
 
-  await prisma.availabilityRequest.create({
-    data: {
-      userId: 3, // Eve
-      date: new Date("2025-11-15"),
-      hours: 8,
-      type: "VACATION",
-      status: "APPROVED",
-      approvedById: 1, // Approved by Alice
-      acceptedRejectedAt: new Date(),
-    },
+      availabilityRequests.push({
+        userId: user.id,
+        date: faker.date.future(),
+        hours: faker.number.int({ min: 4, max: 8 }),
+        type: faker.helpers.arrayElement([
+          "VACATION",
+          "ONLINE_WORK",
+          "OFFLINE_WORK",
+        ]),
+        status,
+        approvedById,
+        // eslint-disable-next-line unicorn/no-negated-condition
+        acceptedRejectedAt: status !== "PENDING" ? new Date() : null,
+      });
+    }
+  }
+
+  await prisma.availabilityRequest.createMany({
+    data: availabilityRequests,
   });
 
   // Seed a sample general request
-  await prisma.generalRequest.create({
-    data: {
-      userId: 2, // Martin
-      description: "Need a new keyboard",
-      status: "PENDING",
-    },
+  const generalRequests: Prisma.GeneralRequestCreateManyInput[] = [];
+  for (const user of users) {
+    if (faker.datatype.boolean()) {
+      generalRequests.push({
+        userId: user.id,
+        description: faker.lorem.sentence(),
+        status: faker.helpers.arrayElement(["PENDING", "APPROVED", "REJECTED"]),
+      });
+    }
+  }
+
+  await prisma.generalRequest.createMany({
+    data: generalRequests,
   });
 
   console.warn("Seeding requests database finished.");
