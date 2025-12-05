@@ -62,6 +62,16 @@ export class TeamsService {
     return teams.map((team) => this.toTeamListResponse(team));
   }
 
+  async findManagedByUser(userId: number) {
+    const teams = await this.prisma.team.findMany({
+      where: {
+        leaderId: userId,
+      },
+      include: teamListInclude,
+    });
+    return teams.map((team) => this.toTeamListResponse(team));
+  }
+
   async findOne(id: number) {
     const team = await this.prisma.team.findUnique({
       where: { id },

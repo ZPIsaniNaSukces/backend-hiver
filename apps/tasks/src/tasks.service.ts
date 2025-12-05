@@ -268,6 +268,93 @@ export class TasksService {
     );
   }
 
+  async getTasksSummary(days: number, user: AuthenticatedUser) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+        },
+        assignee: {
+          companyId: user.companyId,
+        },
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    const completed = tasks.filter((t) => t.status === TASK_STATUS.DONE).length;
+    const pending = tasks.filter((t) => t.status === TASK_STATUS.TODO).length;
+
+    return { completed, pending };
+  }
+
+  async getTasksChart(days: number, user: AuthenticatedUser) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+        },
+        assignee: {
+          companyId: user.companyId,
+        },
+      },
+      select: {
+        status: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    // Create a map to aggregate tasks by date
+    const tasksByDate = new Map<
+      string,
+      { completed: number; pending: number }
+    >();
+
+    // Initialize all dates in range
+    let currentDateIterator = new Date(startDate);
+    const todayEnd = new Date();
+    todayEnd.setHours(0, 0, 0, 0);
+
+    while (currentDateIterator <= todayEnd) {
+      const dateString = currentDateIterator.toISOString().split("T")[0];
+      tasksByDate.set(dateString, { completed: 0, pending: 0 });
+      currentDateIterator = new Date(currentDateIterator);
+      currentDateIterator.setDate(currentDateIterator.getDate() + 1);
+    }
+
+    // Aggregate tasks by date
+    for (const task of tasks) {
+      const dateString = task.createdAt.toISOString().split("T")[0];
+      const entry = tasksByDate.get(dateString);
+      if (entry != null) {
+        if (task.status === TASK_STATUS.DONE) {
+          entry.completed++;
+        } else {
+          entry.pending++;
+        }
+      }
+    }
+
+    // Convert to array format
+    return [...tasksByDate.entries()]
+      .map(([date, counts]) => ({
+        date,
+        ...counts,
+      }))
+      .toSorted((a, b) => a.date.localeCompare(b.date));
+  }
+
   // Kafka event handlers
   async handleUserCreated(event: UserCreatedEventDto): Promise<void> {
     await this.prisma.taskUserInfo.create({
