@@ -194,13 +194,25 @@ export class RequestsService {
   async findAllAvailabilityRequests(user: { id: number; role: string | null }) {
     const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
 
-    return await this.prisma.availabilityRequest.findMany({
+    const requests = await this.prisma.availabilityRequest.findMany({
       where: isAdminOrManager ? {} : { userId: user.id },
       include: {
         user: true,
         approvedBy: true,
       },
     });
+
+    const userInfo = await this.prisma.requestUserInfo.findUnique({
+      where: { id: user.id },
+      select: {
+        availableLeaveHours: true,
+      },
+    });
+
+    return {
+      requests,
+      availableLeaveHours: userInfo?.availableLeaveHours ?? 0,
+    };
   }
 
   async findAllGeneralRequests(user: { id: number; role: string | null }) {
