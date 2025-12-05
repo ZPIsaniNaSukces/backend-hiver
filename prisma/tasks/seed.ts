@@ -1,8 +1,12 @@
+import { faker } from "@faker-js/faker/locale/pl";
+
+import type { Prisma } from "../../generated/prisma/tasks-client";
 import {
   PrismaClient,
   TASK_STATUS,
   TASK_TYPE,
 } from "../../generated/prisma/tasks-client";
+import { buildSeedUsers } from "../shared/seed-data";
 
 const prisma = new PrismaClient({
   datasources: {
@@ -13,90 +17,71 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  console.log("Seeding tasks database...");
+  console.warn("Seeding tasks database...");
 
   // Clean up existing data
   await prisma.task.deleteMany();
   await prisma.taskUserInfo.deleteMany();
 
+  const users = buildSeedUsers();
+
   // Create task user infos for existing users
-  // These would normally be created via Kafka events
   await prisma.taskUserInfo.createMany({
-    data: [
-      {
-        id: 1,
-        bossId: null,
-        companyId: 1,
-        name: "Alice",
-        lastName: "Admin",
-        title: "CTO",
-      },
-      {
-        id: 2,
-        bossId: 1,
-        companyId: 1,
-        name: "Mark",
-        lastName: "Manager",
-        title: "Engineering Manager",
-      },
-      {
-        id: 3,
-        bossId: 2,
-        companyId: 1,
-        name: "Eve",
-        lastName: "Engineer",
-        title: "Senior Developer",
-      },
-      {
-        id: 4,
-        bossId: 2,
-        companyId: 1,
-        name: "Sam",
-        lastName: "Specialist",
-        title: "Developer",
-      },
-    ],
+    data: users.map((u) => ({
+      id: u.id,
+      bossId: u.bossId,
+      companyId: u.companyId,
+      name: u.name,
+      lastName: u.surname,
+      title: u.title,
+    })),
   });
 
   // Create sample tasks
+  const tasksData: Prisma.TaskCreateManyInput[] = [];
+  for (const user of users) {
+    // Generate 2-5 tasks where this user is involved
+    const numberOfTasks = faker.number.int({ min: 2, max: 5 });
+
+    const colleagues = users.filter(
+      (u) => u.companyId === user.companyId && u.id !== user.id,
+    );
+
+    if (colleagues.length === 0) {
+      continue;
+    }
+
+    for (let index = 0; index < numberOfTasks; index++) {
+      const otherPerson = faker.helpers.arrayElement(colleagues);
+
+      // Randomly decide if user is reporter or assignee
+      const isReporter = faker.datatype.boolean();
+      const reporterId = isReporter ? user.id : otherPerson.id;
+      const assigneeId = isReporter ? otherPerson.id : user.id;
+
+      tasksData.push({
+        title: faker.lorem.sentence({ min: 3, max: 6 }),
+        description: faker.lorem.paragraph(),
+        status: faker.helpers.enumValue(TASK_STATUS),
+        type: faker.helpers.enumValue(TASK_TYPE),
+        reporterId,
+        assigneeId,
+        dueDate: faker.date.future(),
+      });
+    }
+  }
+
   await prisma.task.createMany({
-    data: [
-      {
-        title: "Setup project infrastructure",
-        description: "Configure CI/CD pipeline and deployment",
-        status: TASK_STATUS.TODO,
-        type: TASK_TYPE.FEATURE,
-        reporterId: 1,
-        assigneeId: 2,
-        dueDate: new Date("2025-12-01"),
-      },
-      {
-        title: "Implement user authentication",
-        description: "Add JWT authentication and authorization",
-        status: TASK_STATUS.DONE,
-        type: TASK_TYPE.FEATURE,
-        reporterId: 2,
-        assigneeId: 3,
-        dueDate: new Date("2025-11-15"),
-      },
-      {
-        title: "Design database schema",
-        description: "Create ERD and Prisma schema",
-        status: TASK_STATUS.TODO,
-        type: TASK_TYPE.DOCUMENTATION,
-        reporterId: 1,
-        assigneeId: 4,
-        dueDate: new Date("2025-12-10"),
-      },
-    ],
+    data: tasksData,
   });
 
-  console.log("Tasks database seeded successfully!");
+  console.warn("Tasks database seeded successfully!");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error: unknown) => {
+    console.error(error);
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   })
   .finally(async () => {
