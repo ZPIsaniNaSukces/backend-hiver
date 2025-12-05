@@ -60,6 +60,22 @@ export class TasksController {
     return await this.tasksService.findByStatus(status, query, user);
   }
 
+  @Get("summary")
+  async getSummary(
+    @Query("days", ParseIntPipe) days = 30,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.tasksService.getTasksSummary(days, user);
+  }
+
+  @Get("chart")
+  async getChart(
+    @Query("days", ParseIntPipe) days = 7,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.tasksService.getTasksChart(days, user);
+  }
+
   @Get("user/:userId")
   async findForUser(
     @Param("userId", ParseIntPipe) userId: number,

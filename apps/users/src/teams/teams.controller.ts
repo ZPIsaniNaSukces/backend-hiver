@@ -35,6 +35,12 @@ export class TeamsController {
     return this.teamsService.findAll();
   }
 
+  @Get("managed")
+  @Roles(USER_ROLE.MANAGER, USER_ROLE.ADMIN)
+  async findManaged(@CurrentUser() user: AuthenticatedUser) {
+    return await this.teamsService.findManagedByUser(user.id);
+  }
+
   @Get(":id")
   async findOne(@Param("id") id: number) {
     return this.teamsService.findOne(id);
