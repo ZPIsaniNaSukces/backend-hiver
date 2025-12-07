@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker/locale/pl";
+import { fakerPL as faker } from "@faker-js/faker";
 import { ACCOUNT_STATUS, USER_ROLE } from "@prisma/client";
 
 export interface SeedCompany {
