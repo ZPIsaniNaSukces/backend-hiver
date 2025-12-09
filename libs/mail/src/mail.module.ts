@@ -12,19 +12,21 @@ import { MailService } from "./mail.service";
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         // REMOVE WHEN ON PROD
-        const user = config.get("MAIL_USER");
-        const pass = config.get("MAIL_PASSWORD");
+        const user = config.get<string>("MAIL_USER");
+        const pass = config.get<string>("MAIL_PASSWORD");
 
         return {
           transport: {
-            host: config.get("MAIL_HOST"),
-            port: config.get("MAIL_PORT"),
+            host: config.get<string>("MAIL_HOST"),
+            port: config.get<number>("MAIL_PORT"),
             secure: false,
             // (mailho testing, remove mailhog creds in env and it won't cause an issue)
-            ...(user && pass ? { auth: { user, pass } } : {}),
+            ...(typeof user === "string" && typeof pass === "string"
+              ? { auth: { user, pass } }
+              : {}),
           },
           defaults: {
-            from: config.get("MAIL_FROM"),
+            from: config.get<string>("MAIL_FROM"),
           },
         };
       },

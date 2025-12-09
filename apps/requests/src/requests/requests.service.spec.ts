@@ -63,6 +63,8 @@ describe("RequestsService", () => {
       name: "John",
       lastName: "Doe",
       title: "Developer",
+      email: "frutti@di.mare",
+      phone: "67420180",
     };
     const created = {
       id: 10,
@@ -72,6 +74,8 @@ describe("RequestsService", () => {
       name: "John",
       lastName: "Doe",
       title: "Developer",
+      email: "frutti@di.mare",
+      phone: "67420180",
     };
     prismaServiceMock.requestUserInfo.create.mockResolvedValue(created);
 
@@ -85,6 +89,8 @@ describe("RequestsService", () => {
         name: "John",
         lastName: "Doe",
         title: "Developer",
+        email: "frutti@di.mare",
+        phone: "67420180",
       },
     });
     expect(result).toEqual(created);
@@ -98,6 +104,8 @@ describe("RequestsService", () => {
       name: "Jane",
       lastName: "Smith",
       title: "Manager",
+      email: "frutti@di.mare",
+      phone: "67420180",
     };
     prismaServiceMock.requestUserInfo.update.mockResolvedValue({});
 
@@ -111,6 +119,8 @@ describe("RequestsService", () => {
         name: "Jane",
         lastName: "Smith",
         title: "Manager",
+        email: "frutti@di.mare",
+        phone: "67420180",
       },
     });
   });

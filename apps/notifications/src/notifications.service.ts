@@ -32,25 +32,18 @@ export class NotificationsService {
 
   // User lifecycle event handlers
   async handleUserCreated(event: UserCreatedEventDto): Promise<void> {
-    if (event.id == null || event.companyId == null) {
-      this.logger.error(
-        `UserCreatedEvent missing required fields: id=${String(event.id)} companyId=${String(event.companyId)}`,
-      );
-      return;
-    }
-
     await this.prisma.notificationUserInfo.upsert({
       where: { id: event.id },
       update: {
         companyId: event.companyId,
-        email: event.email ?? null,
-        phone: event.phone ?? null,
+        email: event.email,
+        phone: event.phone,
       },
       create: {
         id: event.id,
         companyId: event.companyId,
-        email: event.email ?? null,
-        phone: event.phone ?? null,
+        email: event.email,
+        phone: event.phone,
         pushTokens: [],
       },
     });
@@ -67,10 +60,10 @@ export class NotificationsService {
           "Your account has been created successfully.",
         );
         this.logger.log(`Welcome email sent to ${event.email}`);
-      } catch (err) {
+      } catch (error) {
         this.logger.error(
           `Failed to send welcome email to ${event.email}`,
-          err instanceof Error ? err.stack : undefined,
+          error instanceof Error ? error.stack : undefined,
         );
       }
     }
@@ -138,15 +131,18 @@ export class NotificationsService {
     // Send notification based on type
     try {
       switch (dto.type) {
-        case NotificationType.EMAIL:
+        case NotificationType.EMAIL: {
           await this.sendEmail(userInfo, notification);
           break;
-        case NotificationType.SMS:
-          await this.sendSms(userInfo, notification);
+        }
+        case NotificationType.SMS: {
+          this.sendSms(userInfo, notification);
           break;
-        case NotificationType.PUSH:
-          await this.sendPushNotification(userInfo, notification);
+        }
+        case NotificationType.PUSH: {
+          this.sendPushNotification(userInfo, notification);
           break;
+        }
       }
 
       // Update status to sent
@@ -198,16 +194,16 @@ export class NotificationsService {
     this.logger.log(`Email sent successfully to ${userInfo.email}`);
   }
 
-  private async sendSms(
+  private sendSms(
     userInfo: NotificationUserInfo,
     notification: Notification,
-  ): Promise<void> {
+  ): void {
     if (userInfo.phone == null) {
       throw new Error("User does not have a phone number");
     }
 
     this.logger.log(
-      `Sending SMS to ${userInfo.phone}: ${notification.message.substring(0, 50)}...`,
+      `Sending SMS to ${userInfo.phone}: ${notification.message.slice(0, 50)}...`,
     );
 
     // TODO: Implement SMS sending logic using AWS SNS
@@ -215,10 +211,10 @@ export class NotificationsService {
     this.logger.log(`SMS sent successfully to ${userInfo.phone}`);
   }
 
-  private async sendPushNotification(
+  private sendPushNotification(
     userInfo: NotificationUserInfo,
     notification: Notification,
-  ): Promise<void> {
+  ): void {
     if (userInfo.pushTokens.length === 0) {
       throw new Error("User does not have any push notification tokens");
     }
