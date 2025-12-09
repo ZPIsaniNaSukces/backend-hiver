@@ -238,11 +238,13 @@ async function main() {
     });
   }
 
-  console.warn(`Created CheckinUserInfo for ${SEED_USERS.length} users`);
+  console.warn(
+    `Created CheckinUserInfo for ${String(SEED_USERS.length)} users`,
+  );
 
   // Generate realistic check-in/check-out data for the last 14 days
   // This creates history for dashboard widgets showing office presence
-  const checkins: Array<{
+  const checkins: {
     userId: number;
     companyId: number;
     type: CheckinType;
@@ -251,18 +253,21 @@ async function main() {
     tagId: number | null;
     counter: number;
     signature: string | null;
-  }> = [];
+  }[] = [];
 
   let globalCounter = 1;
 
-  // Generate check-ins for last 14 days (excluding weekends)
-  for (let daysAgo = 13; daysAgo >= 0; daysAgo--) {
+  // Generate check-ins for last 14 days (excluding weekends and today)
+  // Today's check-ins are handled separately below
+  for (let daysAgo = 13; daysAgo >= 1; daysAgo--) {
     const checkDate = new Date();
     checkDate.setDate(checkDate.getDate() - daysAgo);
 
     // Skip weekends
     const dayOfWeek = checkDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      continue;
+    }
 
     // Determine how many people come to office (varies by day)
     // More people come Mon-Wed, fewer Thu-Fri
@@ -270,7 +275,9 @@ async function main() {
 
     for (const user of SEED_USERS) {
       // Random chance of coming to office based on attendance rate
-      if (Math.random() > attendanceRate) continue;
+      if (Math.random() > attendanceRate) {
+        continue;
+      }
 
       // Vary check-in type: 70% NFC, 20% ONLINE, 10% OFFLINE
       const typeRoll = Math.random();
@@ -289,7 +296,7 @@ async function main() {
         } else {
           tagId = garageTag.id;
         }
-        signature = `sig-${user.id}-${daysAgo}-${globalCounter}`;
+        signature = `sig-${String(user.id)}-${String(daysAgo)}-${String(globalCounter)}`;
       } else if (typeRoll < 0.9) {
         type = "ONLINE" as CheckinType;
       } else {
@@ -304,29 +311,29 @@ async function main() {
       const outHour = 16 + Math.floor(Math.random() * 3);
       const outMinute = Math.floor(Math.random() * 60);
 
-      // Check-in
-      checkins.push({
-        userId: user.id,
-        companyId: COMPANY_ID,
-        type,
-        direction: "IN" as CheckinDirection,
-        timestamp: createDateTime(daysAgo, inHour, inMinute),
-        tagId,
-        counter: globalCounter++,
-        signature,
-      });
-
-      // Check-out (same type as check-in usually)
-      checkins.push({
-        userId: user.id,
-        companyId: COMPANY_ID,
-        type,
-        direction: "OUT" as CheckinDirection,
-        timestamp: createDateTime(daysAgo, outHour, outMinute),
-        tagId,
-        counter: globalCounter++,
-        signature: signature ? `${signature}-out` : null,
-      });
+      // Check-in and Check-out (same type as check-in usually)
+      checkins.push(
+        {
+          userId: user.id,
+          companyId: COMPANY_ID,
+          type,
+          direction: "IN" as CheckinDirection,
+          timestamp: createDateTime(daysAgo, inHour, inMinute),
+          tagId,
+          counter: globalCounter++,
+          signature,
+        },
+        {
+          userId: user.id,
+          companyId: COMPANY_ID,
+          type,
+          direction: "OUT" as CheckinDirection,
+          timestamp: createDateTime(daysAgo, outHour, outMinute),
+          tagId,
+          counter: globalCounter++,
+          signature: signature === null ? null : `${signature}-out`,
+        },
+      );
     }
   }
 
@@ -344,7 +351,7 @@ async function main() {
     if (typeRoll < 0.7) {
       type = "NFC" as CheckinType;
       tagId = Math.random() < 0.7 ? mainEntranceTag.id : sideEntranceTag.id;
-      signature = `sig-${user.id}-today-${globalCounter}`;
+      signature = `sig-${String(user.id)}-today-${String(globalCounter)}`;
     } else {
       type = "ONLINE" as CheckinType;
     }
@@ -374,7 +381,7 @@ async function main() {
         ),
         tagId,
         counter: globalCounter++,
-        signature: signature ? `${signature}-out` : null,
+        signature: signature === null ? null : `${signature}-out`,
       });
     }
   }
@@ -384,7 +391,7 @@ async function main() {
     await prisma.checkin.create({ data: checkin });
   }
 
-  console.warn(`Created ${checkins.length} check-in/check-out records`);
+  console.warn(`Created ${String(checkins.length)} check-in/check-out records`);
   console.warn("Seeding presence database finished.");
 }
 
