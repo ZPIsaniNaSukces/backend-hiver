@@ -203,7 +203,7 @@ async function main() {
       uid: "042C6632A91190",
       name: "Hiver HQ - Wejście główne",
       companyId: COMPANY_ID,
-      aesKey: "globex-secret-key-042C6632A91190",
+      aesKey: "169b35e5fd663d4042224323bc8ebc71",
     },
   });
 
