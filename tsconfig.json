@@ -41,7 +41,9 @@
       "@generated/requests": ["generated/prisma/requests-client"],
       "@generated/requests/*": ["generated/prisma/requests-client/*"],
       "@generated/tasks": ["generated/prisma/tasks-client"],
-      "@generated/tasks/*": ["generated/prisma/tasks-client/*"]
+      "@generated/tasks/*": ["generated/prisma/tasks-client/*"],
+      "@generated/notifications": ["generated/prisma/notifications-client"],
+      "@generated/notifications/*": ["generated/prisma/notifications-client/*"]
     }
   }
 }
