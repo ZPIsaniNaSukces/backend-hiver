@@ -82,14 +82,11 @@ export class UsersService implements OnModuleInit, OnModuleDestroy {
       id: user.id,
       bossId: user.bossId ?? null,
       companyId: user.companyId,
-<<<<<<< HEAD
       name: user.name ?? null,
       lastName: user.surname ?? null,
       title: user.title ?? null,
-=======
       email: user.email,
       phone: user.phone ?? null,
->>>>>>> 3b16702 (feat: enhance notifications module with email functionality and user event handling)
     };
     this.kafka.emit(UsersMessageTopic.CREATE, createdEvent);
 

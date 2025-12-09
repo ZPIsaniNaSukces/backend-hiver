@@ -1,9 +1,5 @@
 import { Type } from "class-transformer";
-<<<<<<< HEAD
-import { IsInt, IsOptional, IsString } from "class-validator";
-=======
 import { IsEmail, IsInt, IsOptional, IsString } from "class-validator";
->>>>>>> 3b16702 (feat: enhance notifications module with email functionality and user event handling)
 
 export class UserCreatedEventDto {
   @Type(() => Number)
@@ -19,7 +15,6 @@ export class UserCreatedEventDto {
   @IsInt()
   companyId!: number;
 
-<<<<<<< HEAD
   @IsOptional()
   @IsString()
   name?: string | null;
@@ -31,12 +26,10 @@ export class UserCreatedEventDto {
   @IsOptional()
   @IsString()
   title?: string | null;
-=======
   @IsEmail()
   email!: string;
 
   @IsOptional()
   @IsString()
   phone!: string | null;
->>>>>>> 3b16702 (feat: enhance notifications module with email functionality and user event handling)
 }
