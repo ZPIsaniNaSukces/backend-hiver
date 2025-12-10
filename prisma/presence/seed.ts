@@ -209,7 +209,7 @@ async function main() {
 
   const sideEntranceTag = await prisma.nfcTag.create({
     data: {
-      uid: "04566732A9119",
+      uid: "04566732A91190",
       name: "Hiver HQ - Wejście boczne",
       companyId: COMPANY_ID,
       aesKey: "3b51218db435bc7e5a6bbb5258dd8d16",
@@ -218,7 +218,7 @@ async function main() {
 
   const garageTag = await prisma.nfcTag.create({
     data: {
-      uid: "044D6732A9119",
+      uid: "044D6732A91190",
       name: "Hiver HQ - Garaż",
       companyId: COMPANY_ID,
       aesKey: "73497a1db8fcb4aef99a38b1c9d7a139",
@@ -227,7 +227,7 @@ async function main() {
 
   const parkingTag = await prisma.nfcTag.create({
     data: {
-      uid: "04456732A9119",
+      uid: "04456732A91190",
       name: "Hiver HQ - Parking",
       companyId: COMPANY_ID,
       aesKey: "5dd52c6788df78860320e6c1ce3d1db8",
