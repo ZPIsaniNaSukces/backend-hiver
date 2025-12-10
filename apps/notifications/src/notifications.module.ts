@@ -1,5 +1,7 @@
+import { FirebaseModule } from "@app/firebase";
 import { MailModule } from "@app/mail";
 import { PrismaModule } from "@app/prisma";
+import { PushNotificationsModule } from "@app/push-notifications";
 
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
@@ -22,6 +24,8 @@ import {
       global: true,
     }),
     MailModule,
+    FirebaseModule,
+    PushNotificationsModule,
   ],
   controllers: [NotificationsController, NotificationsEventsController],
   providers: [NotificationsService],

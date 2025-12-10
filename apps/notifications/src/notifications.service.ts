@@ -7,6 +7,7 @@ import {
   UserUpdatedEventDto,
 } from "@app/contracts";
 import { MailService } from "@app/mail";
+import { PushNotificationsService } from "@app/push-notifications";
 import type {
   Notification,
   NotificationUserInfo,
@@ -28,6 +29,7 @@ export class NotificationsService {
     @Inject(NOTIFICATIONS_PRISMA)
     private readonly prisma: NotificationsPrismaClient,
     private readonly mailService: MailService,
+    private readonly pushNotificationsService: PushNotificationsService,
   ) {}
 
   // User lifecycle event handlers
@@ -214,7 +216,7 @@ export class NotificationsService {
   private sendPushNotification(
     userInfo: NotificationUserInfo,
     notification: Notification,
-  ): void {
+  ): Promise<void> {
     if (userInfo.pushTokens.length === 0) {
       throw new Error("User does not have any push notification tokens");
     }
@@ -223,11 +225,27 @@ export class NotificationsService {
       `Sending push notification to ${String(userInfo.pushTokens.length)} device(s): ${notification.subject ?? "No subject"}`,
     );
 
-    // TODO: Implement push notification logic using... Firebase? idk
-
-    this.logger.log(
-      `Push notification sent successfully to ${String(userInfo.pushTokens.length)} device(s)`,
-    );
+    return this.pushNotificationsService
+      .sendToUser(userInfo, {
+        title: notification.subject ?? "Notification",
+        body: notification.message,
+        data: notification.metadata
+          ? Object.entries(
+              notification.metadata as Record<string, unknown>,
+            ).reduce(
+              (acc, [key, value]) => ({
+                ...acc,
+                [key]: String(value),
+              }),
+              {},
+            )
+          : undefined,
+      })
+      .then(() => {
+        this.logger.log(
+          `Push notification sent successfully to ${String(userInfo.pushTokens.length)} device(s)`,
+        );
+      });
   }
 
   // Utility methods for managing push tokens
