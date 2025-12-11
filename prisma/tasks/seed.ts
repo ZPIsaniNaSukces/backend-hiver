@@ -189,6 +189,14 @@ const SEED_USERS: UserSeedData[] = [
 
 const COMPANY_ID = 1;
 
+// Helper function to create a date relative to now
+function createDate(daysAgo: number, hour: number, minute: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+}
+
 async function main() {
   console.log("Seeding tasks database...");
 
@@ -225,6 +233,8 @@ async function main() {
       reporterId: 2, // Anna (Dev Lead)
       assigneeId: 5, // Tomasz (Senior Backend)
       dueDate: new Date("2025-11-20"),
+      createdAt: createDate(25, 10, 30), // Created 25 days ago
+      completedAt: createDate(7, 16, 45), // Completed 7 days ago
     },
     {
       title: "Optymalizacja zapytań do bazy danych",
@@ -235,6 +245,8 @@ async function main() {
       reporterId: 5, // Tomasz
       assigneeId: 5, // Tomasz
       dueDate: new Date("2025-11-25"),
+      createdAt: createDate(20, 11, 15),
+      completedAt: createDate(5, 14, 20),
     },
     {
       title: "Bug: Niepoprawne wyświetlanie dat w strefie czasowej UTC+1",
@@ -245,6 +257,8 @@ async function main() {
       reporterId: 16, // Natalia (QA)
       assigneeId: 6, // Katarzyna (Frontend)
       dueDate: new Date("2025-11-22"),
+      createdAt: createDate(18, 9, 15),
+      completedAt: createDate(3, 17, 30),
     },
     {
       title: "Refaktoryzacja modułu powiadomień",
@@ -255,6 +269,7 @@ async function main() {
       reporterId: 2, // Anna
       assigneeId: 7, // Michał (Junior)
       dueDate: new Date("2025-12-15"),
+      createdAt: createDate(10, 14, 0),
     },
     {
       title: "Implementacja WebSocket dla real-time updates",
@@ -265,6 +280,7 @@ async function main() {
       reporterId: 1, // Jan (CEO)
       assigneeId: 5, // Tomasz
       dueDate: new Date("2025-12-20"),
+      createdAt: createDate(6, 10, 30),
     },
     {
       title: "Konfiguracja CI/CD dla nowego środowiska staging",
@@ -275,6 +291,8 @@ async function main() {
       reporterId: 2, // Anna
       assigneeId: 8, // Agnieszka (DevOps)
       dueDate: new Date("2025-11-28"),
+      createdAt: createDate(22, 8, 45),
+      completedAt: createDate(9, 15, 10),
     },
     {
       title: "Aktualizacja dokumentacji API (Swagger)",
@@ -285,6 +303,7 @@ async function main() {
       reporterId: 2, // Anna
       assigneeId: 7, // Michał
       dueDate: new Date("2025-12-10"),
+      createdAt: createDate(15, 11, 20),
     },
     {
       title: "Bug: Memory leak w serwisie tasks",
@@ -295,6 +314,7 @@ async function main() {
       reporterId: 19, // Grzegorz (SysAdmin)
       assigneeId: 8, // Agnieszka
       dueDate: new Date("2025-12-08"),
+      createdAt: createDate(8, 16, 40),
     },
     {
       title: "Testy E2E dla flow rejestracji użytkownika",
@@ -305,6 +325,7 @@ async function main() {
       reporterId: 16, // Natalia
       assigneeId: 16, // Natalia
       dueDate: new Date("2025-12-12"),
+      createdAt: createDate(11, 9, 30),
     },
     {
       title: "Backup i disaster recovery plan",
@@ -315,6 +336,7 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 19, // Grzegorz
       dueDate: new Date("2025-12-18"),
+      createdAt: createDate(16, 10, 0),
     },
 
     // ==================== MARKETING TEAM TASKS ====================
@@ -327,6 +349,8 @@ async function main() {
       reporterId: 3, // Piotr (Marketing Lead)
       assigneeId: 17, // Marcin (UI/UX)
       dueDate: new Date("2025-11-15"),
+      createdAt: createDate(30, 8, 0),
+      completedAt: createDate(12, 16, 15),
     },
     {
       title: "Kampania Google Ads - grudzień",
@@ -337,6 +361,8 @@ async function main() {
       reporterId: 3, // Piotr
       assigneeId: 9, // Robert (Senior Marketing)
       dueDate: new Date("2025-12-05"),
+      createdAt: createDate(14, 9, 0),
+      completedAt: null,
     },
     {
       title: "Artykuły blogowe - seria o produktywności",
@@ -347,26 +373,8 @@ async function main() {
       reporterId: 3, // Piotr
       assigneeId: 10, // Joanna (Content)
       dueDate: new Date("2025-12-20"),
-    },
-    {
-      title: "Audyt SEO strony głównej",
-      description:
-        "Przeprowadzić pełny audyt SEO strony hiver.tech i przygotować raport z rekomendacjami.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.RESEARCH,
-      reporterId: 3, // Piotr
-      assigneeId: 11, // Krzysztof (SEO)
-      dueDate: new Date("2025-11-30"),
-    },
-    {
-      title: "Kalendarz social media - grudzień/styczeń",
-      description:
-        "Przygotować harmonogram postów na LinkedIn, Facebook i Instagram na okres świąteczno-noworoczny.",
-      status: TASK_STATUS.TODO,
-      type: TASK_TYPE.OTHER,
-      reporterId: 3, // Piotr
-      assigneeId: 12, // Monika (Social Media)
-      dueDate: new Date("2025-12-01"),
+      createdAt: createDate(13, 10, 15),
+      completedAt: null,
     },
     {
       title: "Redesign landing page dla nowego produktu",
@@ -377,6 +385,8 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 17, // Marcin
       dueDate: new Date("2025-12-15"),
+      createdAt: createDate(7, 13, 20),
+      completedAt: null,
     },
     {
       title: "PR: Komunikat prasowy - nowa wersja systemu",
@@ -387,9 +397,9 @@ async function main() {
       reporterId: 3, // Piotr
       assigneeId: 20, // Karolina (PR)
       dueDate: new Date("2025-12-10"),
+      createdAt: createDate(5, 14, 30),
+      completedAt: null,
     },
-
-    // ==================== HR TEAM TASKS ====================
     {
       title: "Onboarding - nowi pracownicy Q1 2026",
       description:
@@ -399,6 +409,8 @@ async function main() {
       reporterId: 4, // Magdalena (HR Lead)
       assigneeId: 13, // Paweł (HR)
       dueDate: new Date("2025-12-20"),
+      createdAt: createDate(4, 9, 45),
+      completedAt: null,
     },
     {
       title: "Rekrutacja: Senior DevOps Engineer",
@@ -409,6 +421,8 @@ async function main() {
       reporterId: 2, // Anna (zapotrzebowanie z Dev)
       assigneeId: 14, // Ewa (Recruitment)
       dueDate: new Date("2025-12-30"),
+      createdAt: createDate(17, 10, 0),
+      completedAt: null,
     },
     {
       title: "Przegląd i aktualizacja regulaminu pracy",
@@ -419,6 +433,8 @@ async function main() {
       reporterId: 4, // Magdalena
       assigneeId: 13, // Paweł
       dueDate: new Date("2025-12-15"),
+      createdAt: createDate(3, 11, 0),
+      completedAt: null,
     },
     {
       title: "Raport płacowy Q4 2025",
@@ -429,6 +445,8 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 15, // Łukasz (Payroll)
       dueDate: new Date("2025-12-28"),
+      createdAt: createDate(2, 15, 20),
+      completedAt: null,
     },
     {
       title: "Organizacja spotkania integracyjnego - Wigilia firmowa",
@@ -439,19 +457,9 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 18, // Aleksandra (Office Manager)
       dueDate: new Date("2025-12-18"),
+      createdAt: createDate(1, 8, 30),
+      completedAt: null,
     },
-    {
-      title: "Badanie satysfakcji pracowników 2025",
-      description:
-        "Przeprowadzić coroczne badanie satysfakcji pracowników i przygotować raport z wynikami.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.RESEARCH,
-      reporterId: 4, // Magdalena
-      assigneeId: 13, // Paweł
-      dueDate: new Date("2025-11-25"),
-    },
-
-    // ==================== CROSS-TEAM / STRATEGIC TASKS ====================
     {
       title: "Planowanie budżetu IT na 2026",
       description:
@@ -461,6 +469,8 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 2, // Anna
       dueDate: new Date("2025-12-20"),
+      createdAt: createDate(19, 9, 0),
+      completedAt: null,
     },
     {
       title: "Spotkanie kwartalne - podsumowanie Q4",
@@ -471,6 +481,8 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 1, // Jan
       dueDate: new Date("2025-12-22"),
+      createdAt: createDate(0, 10, 0), // Created today
+      completedAt: null,
     },
   ];
 

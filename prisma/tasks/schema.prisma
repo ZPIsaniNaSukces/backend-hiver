@@ -47,6 +47,7 @@ model Task {
   dueDate     DateTime?
   reporterId  Int?
   assigneeId  Int?
+  completedAt DateTime?
 
   reporter TaskUserInfo? @relation("TaskReporter", fields: [reporterId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   assignee TaskUserInfo? @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
@@ -58,4 +59,5 @@ model Task {
   @@index([reporterId])
   @@index([status])
   @@index([type])
+  @@index([completedAt])
 }

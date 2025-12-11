@@ -135,6 +135,21 @@ export class TasksService {
       assigneeId: updateTaskDto.assigneeId,
     };
 
+    // Auto-set completedAt when status changes to DONE
+    if (
+      updateTaskDto.status === TASK_STATUS.DONE &&
+      task.status !== TASK_STATUS.DONE
+    ) {
+      data.completedAt = new Date();
+    }
+    // Clear completedAt when status changes from DONE to TODO
+    else if (
+      updateTaskDto.status === TASK_STATUS.TODO &&
+      task.status === TASK_STATUS.DONE
+    ) {
+      data.completedAt = null;
+    }
+
     return await this.prisma.task.update({
       where: { id },
       data,
@@ -232,11 +247,16 @@ export class TasksService {
       throw new NotFoundException(`Task with ID ${String(id)} not found`);
     }
 
+    const updateData = {
+      status: TASK_STATUS.DONE,
+      completedAt: new Date(),
+    };
+
     // ADMINs can always mark tasks as done
     if (user.role === USER_ROLE.ADMIN) {
       return await this.prisma.task.update({
         where: { id },
-        data: { status: TASK_STATUS.DONE },
+        data: updateData,
       });
     }
 
@@ -244,7 +264,7 @@ export class TasksService {
     if (task.assigneeId === user.id) {
       return await this.prisma.task.update({
         where: { id },
-        data: { status: TASK_STATUS.DONE },
+        data: updateData,
       });
     }
 
@@ -297,57 +317,85 @@ export class TasksService {
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+
+    // Fetch all relevant tasks: created before or during the period, or completed during the period
     const tasks = await this.prisma.task.findMany({
       where: {
-        createdAt: {
-          gte: startDate,
-        },
         assignee: {
           companyId: user.companyId,
         },
+        OR: [
+          // Tasks created during or before the period
+          {
+            createdAt: {
+              lte: endDate,
+            },
+          },
+          // Tasks completed during the period (even if created earlier)
+          {
+            completedAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
       },
       select: {
         status: true,
         createdAt: true,
+        completedAt: true,
       },
       orderBy: {
         createdAt: "asc",
       },
     });
 
-    // Create a map to aggregate tasks by date
-    const tasksByDate = new Map<
+    // Create a map to store daily counts
+    const dailyStats = new Map<
       string,
-      { completed: number; pending: number }
+      { pending: number; completed: number }
     >();
 
-    // Initialize all dates in range
-    let currentDateIterator = new Date(startDate);
-    const todayEnd = new Date();
-    todayEnd.setHours(0, 0, 0, 0);
-
-    while (currentDateIterator <= todayEnd) {
-      const dateString = currentDateIterator.toISOString().split("T")[0];
-      tasksByDate.set(dateString, { completed: 0, pending: 0 });
-      currentDateIterator = new Date(currentDateIterator);
-      currentDateIterator.setDate(currentDateIterator.getDate() + 1);
+    // Initialize all dates in range with zeros
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateString = currentDate.toISOString().split("T")[0];
+      dailyStats.set(dateString, { pending: 0, completed: 0 });
+      currentDate = new Date(currentDate);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Aggregate tasks by date
-    for (const task of tasks) {
-      const dateString = task.createdAt.toISOString().split("T")[0];
-      const entry = tasksByDate.get(dateString);
-      if (entry != null) {
-        if (task.status === TASK_STATUS.DONE) {
-          entry.completed++;
-        } else {
-          entry.pending++;
+    // For each day, calculate:
+    // - pending: tasks that were open (created but not completed) by end of that day
+    // - completed: tasks that were completed ON that specific day
+    for (const [dateString, stats] of dailyStats.entries()) {
+      const dayEnd = new Date(dateString);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      for (const task of tasks) {
+        const wasCreatedByThisDay = task.createdAt <= dayEnd;
+        const wasCompletedByThisDay =
+          task.completedAt != null && task.completedAt <= dayEnd;
+        const wasCompletedOnThisDay =
+          task.completedAt != null &&
+          task.completedAt.toISOString().split("T")[0] === dateString;
+
+        // Count as pending if: created by this day AND not completed by this day
+        if (wasCreatedByThisDay && !wasCompletedByThisDay) {
+          stats.pending++;
+        }
+
+        // Count as completed if: completed ON this specific day
+        if (wasCompletedOnThisDay) {
+          stats.completed++;
         }
       }
     }
 
-    // Convert to array format
-    return [...tasksByDate.entries()]
+    // Convert to array format and sort by date
+    return [...dailyStats.entries()]
       .map(([date, counts]) => ({
         date,
         ...counts,

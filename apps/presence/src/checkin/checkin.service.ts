@@ -255,14 +255,29 @@ export class CheckinService {
     const stats: HourlyCheckinStat[] = [];
 
     for (let hour = 7; hour <= 17; hour++) {
-      const hourEnd = new Date(now);
-      hourEnd.setHours(hour, 59, 59, 999);
+      // For current hour, use current time; for past hours, use end of that hour
+      // For future hours, don't count any attendance (they haven't happened yet)
+      let cutoffTime: Date;
+      if (hour === currentHour) {
+        cutoffTime = now; // Use actual current time, not end of hour
+      } else if (hour < currentHour) {
+        cutoffTime = new Date(now);
+        cutoffTime.setHours(hour, 59, 59, 999);
+      } else {
+        // Future hours - skip them, show 0 count
+        stats.push({
+          hour: `${hour.toString().padStart(2, "0")}:00`,
+          count: 0,
+          isCurrentHour: false,
+        });
+        continue;
+      }
 
-      // Track last direction per user up to this hour
+      // Track last direction per user up to this cutoff time
       const userLastDirection = new Map<number, CheckinDirection>();
 
       for (const checkin of checkins) {
-        if (checkin.timestamp <= hourEnd) {
+        if (checkin.timestamp <= cutoffTime) {
           userLastDirection.set(checkin.userId, checkin.direction);
         }
       }
