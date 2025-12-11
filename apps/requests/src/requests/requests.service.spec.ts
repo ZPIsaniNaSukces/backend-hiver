@@ -63,6 +63,8 @@ describe("RequestsService", () => {
       name: "John",
       lastName: "Doe",
       title: "Developer",
+      email: "frutti@di.mare",
+      phone: "67420180",
     };
     const created = {
       id: 10,
@@ -98,6 +100,8 @@ describe("RequestsService", () => {
       name: "Jane",
       lastName: "Smith",
       title: "Manager",
+      email: "frutti@di.mare",
+      phone: "67420180",
     };
     prismaServiceMock.requestUserInfo.update.mockResolvedValue({});
 

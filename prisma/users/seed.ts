@@ -330,7 +330,7 @@ async function main() {
     teams.push(team);
   }
 
-  console.warn(`Created ${String(teams.length)} teams`);
+  console.warn(`Created ${teams.length} teams`);
 
   // Hash password once (all users have the same password)
   const hashedPassword = await hashPassword(SEED_PASSWORD);
@@ -339,7 +339,7 @@ async function main() {
   const createdUsers: User[] = [];
   for (const userData of SEED_USERS) {
     const team = teams.find((t) => t.name === userData.teamName);
-    if (team === undefined) {
+    if (!team) {
       throw new Error(`Team not found: ${userData.teamName}`);
     }
 
@@ -364,12 +364,12 @@ async function main() {
     createdUsers.push(user);
   }
 
-  console.warn(`Created ${String(createdUsers.length)} users`);
+  console.warn(`Created ${createdUsers.length} users`);
 
   // Assign team leaders
   for (const teamData of SEED_TEAMS) {
     const team = teams.find((t) => t.name === teamData.name);
-    if (team !== undefined) {
+    if (team) {
       await prisma.team.update({
         where: { id: team.id },
         data: { leaderId: teamData.leaderId },
@@ -394,6 +394,7 @@ async function main() {
   console.warn("Created LeaveRequestUserInfo entries");
 
   // Create some sample leave requests
+  const now = new Date();
   const leaveRequests = [
     // ==================== APPROVED PAST VACATIONS ====================
     {
@@ -580,7 +581,7 @@ async function main() {
     });
   }
 
-  console.warn(`Created ${String(leaveRequests.length)} leave requests`);
+  console.warn(`Created ${leaveRequests.length} leave requests`);
   console.warn("Seeding users database finished.");
 }
 

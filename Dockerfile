@@ -11,7 +11,7 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 RUN npm ci --include=dev
 
-COPY prisma ./prisma   
+COPY prisma ./prisma
 COPY generated ./generated
 COPY . .
 
@@ -20,6 +20,7 @@ RUN npx prisma generate --schema=prisma/users/schema.prisma
 RUN npx prisma generate --schema=prisma/presence/schema.prisma
 RUN npx prisma generate --schema=prisma/requests/schema.prisma
 RUN npx prisma generate --schema=prisma/tasks/schema.prisma
+RUN npx prisma generate --schema=prisma/notifications/schema.prisma
 
 RUN npm run build ${APP}
 RUN npm prune --omit=dev --exclude=nodemailer --exclude=@nestjs-modules/mailer

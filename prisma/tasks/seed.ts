@@ -189,6 +189,14 @@ const SEED_USERS: UserSeedData[] = [
 
 const COMPANY_ID = 1;
 
+// Helper function to create a date relative to now
+function createDate(daysAgo: number, hour: number, minute: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+}
+
 async function main() {
   console.log("Seeding tasks database...");
 
@@ -212,18 +220,10 @@ async function main() {
 
   console.log(`Created TaskUserInfo for ${SEED_USERS.length} users`);
 
-  // Helper function to create date with specific time
-  const createDate = (daysAgo: number, hour = 9, minute = 0) => {
-    const date = new Date();
-    date.setDate(date.getDate() - daysAgo);
-    date.setHours(hour, minute, 0, 0);
-    return date;
-  };
-
-  // Create realistic tasks for a tech company with proper createdAt and completedAt dates
+  // Create realistic tasks for a tech company
   const tasks = [
     // ==================== DEVELOPMENT TEAM TASKS ====================
-    // Completed tasks from the past
+    // Epic: API Development
     {
       title: "Implementacja endpointu autoryzacji OAuth2",
       description:
@@ -257,59 +257,9 @@ async function main() {
       reporterId: 16, // Natalia (QA)
       assigneeId: 6, // Katarzyna (Frontend)
       dueDate: new Date("2025-11-22"),
-      createdAt: createDate(18, 9, 0),
-      completedAt: createDate(4, 17, 30),
+      createdAt: createDate(18, 9, 15),
+      completedAt: createDate(3, 17, 30),
     },
-    {
-      title: "Konfiguracja CI/CD dla nowego środowiska staging",
-      description:
-        "Przygotować pipeline CI/CD w GitHub Actions dla nowego środowiska staging z automatycznym deploymentem.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.FEATURE,
-      reporterId: 2, // Anna
-      assigneeId: 8, // Agnieszka (DevOps)
-      dueDate: new Date("2025-11-28"),
-      createdAt: createDate(15, 8, 45),
-      completedAt: createDate(3, 15, 10),
-    },
-    {
-      title: "Przygotowanie materiałów na targi IT",
-      description:
-        "Stworzyć roll-upy, ulotki i prezentację produktową na targi IT Solutions 2025.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.OTHER,
-      reporterId: 3, // Piotr (Marketing Lead)
-      assigneeId: 17, // Marcin (UI/UX)
-      dueDate: new Date("2025-11-15"),
-      createdAt: createDate(30, 10, 0),
-      completedAt: createDate(10, 13, 45),
-    },
-    {
-      title: "Audyt SEO strony głównej",
-      description:
-        "Przeprowadzić pełny audyt SEO strony hiver.tech i przygotować raport z rekomendacjami.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.RESEARCH,
-      reporterId: 3, // Piotr
-      assigneeId: 11, // Krzysztof (SEO)
-      dueDate: new Date("2025-11-30"),
-      createdAt: createDate(22, 9, 30),
-      completedAt: createDate(6, 16, 0),
-    },
-    {
-      title: "Badanie satysfakcji pracowników 2025",
-      description:
-        "Przeprowadzić coroczne badanie satysfakcji pracowników i przygotować raport z wynikami.",
-      status: TASK_STATUS.DONE,
-      type: TASK_TYPE.RESEARCH,
-      reporterId: 4, // Magdalena
-      assigneeId: 13, // Paweł
-      dueDate: new Date("2025-11-25"),
-      createdAt: createDate(28, 11, 0),
-      completedAt: createDate(8, 14, 30),
-    },
-
-    // Tasks in progress (TODO) - created at various times
     {
       title: "Refaktoryzacja modułu powiadomień",
       description:
@@ -319,8 +269,7 @@ async function main() {
       reporterId: 2, // Anna
       assigneeId: 7, // Michał (Junior)
       dueDate: new Date("2025-12-15"),
-      createdAt: createDate(12, 10, 30),
-      completedAt: null,
+      createdAt: createDate(10, 14, 0),
     },
     {
       title: "Implementacja WebSocket dla real-time updates",
@@ -331,8 +280,19 @@ async function main() {
       reporterId: 1, // Jan (CEO)
       assigneeId: 5, // Tomasz
       dueDate: new Date("2025-12-20"),
-      createdAt: createDate(9, 9, 15),
-      completedAt: null,
+      createdAt: createDate(6, 10, 30),
+    },
+    {
+      title: "Konfiguracja CI/CD dla nowego środowiska staging",
+      description:
+        "Przygotować pipeline CI/CD w GitHub Actions dla nowego środowiska staging z automatycznym deploymentem.",
+      status: TASK_STATUS.DONE,
+      type: TASK_TYPE.FEATURE,
+      reporterId: 2, // Anna
+      assigneeId: 8, // Agnieszka (DevOps)
+      dueDate: new Date("2025-11-28"),
+      createdAt: createDate(22, 8, 45),
+      completedAt: createDate(9, 15, 10),
     },
     {
       title: "Aktualizacja dokumentacji API (Swagger)",
@@ -343,8 +303,7 @@ async function main() {
       reporterId: 2, // Anna
       assigneeId: 7, // Michał
       dueDate: new Date("2025-12-10"),
-      createdAt: createDate(11, 14, 0),
-      completedAt: null,
+      createdAt: createDate(15, 11, 20),
     },
     {
       title: "Bug: Memory leak w serwisie tasks",
@@ -355,8 +314,7 @@ async function main() {
       reporterId: 19, // Grzegorz (SysAdmin)
       assigneeId: 8, // Agnieszka
       dueDate: new Date("2025-12-08"),
-      createdAt: createDate(6, 16, 30),
-      completedAt: null,
+      createdAt: createDate(8, 16, 40),
     },
     {
       title: "Testy E2E dla flow rejestracji użytkownika",
@@ -367,8 +325,7 @@ async function main() {
       reporterId: 16, // Natalia
       assigneeId: 16, // Natalia
       dueDate: new Date("2025-12-12"),
-      createdAt: createDate(8, 10, 0),
-      completedAt: null,
+      createdAt: createDate(11, 9, 30),
     },
     {
       title: "Backup i disaster recovery plan",
@@ -379,8 +336,21 @@ async function main() {
       reporterId: 1, // Jan
       assigneeId: 19, // Grzegorz
       dueDate: new Date("2025-12-18"),
-      createdAt: createDate(10, 11, 30),
-      completedAt: null,
+      createdAt: createDate(16, 10, 0),
+    },
+
+    // ==================== MARKETING TEAM TASKS ====================
+    {
+      title: "Przygotowanie materiałów na targi IT",
+      description:
+        "Stworzyć roll-upy, ulotki i prezentację produktową na targi IT Solutions 2025.",
+      status: TASK_STATUS.DONE,
+      type: TASK_TYPE.OTHER,
+      reporterId: 3, // Piotr (Marketing Lead)
+      assigneeId: 17, // Marcin (UI/UX)
+      dueDate: new Date("2025-11-15"),
+      createdAt: createDate(30, 8, 0),
+      completedAt: createDate(12, 16, 15),
     },
     {
       title: "Kampania Google Ads - grudzień",
@@ -404,18 +374,6 @@ async function main() {
       assigneeId: 10, // Joanna (Content)
       dueDate: new Date("2025-12-20"),
       createdAt: createDate(13, 10, 15),
-      completedAt: null,
-    },
-    {
-      title: "Kalendarz social media - grudzień/styczeń",
-      description:
-        "Przygotować harmonogram postów na LinkedIn, Facebook i Instagram na okres świąteczno-noworoczny.",
-      status: TASK_STATUS.TODO,
-      type: TASK_TYPE.OTHER,
-      reporterId: 3, // Piotr
-      assigneeId: 12, // Monika (Social Media)
-      dueDate: new Date("2025-12-01"),
-      createdAt: createDate(16, 11, 45),
       completedAt: null,
     },
     {

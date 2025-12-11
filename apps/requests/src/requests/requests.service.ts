@@ -192,10 +192,29 @@ export class RequestsService {
   }
 
   async findAllAvailabilityRequests(user: { id: number; role: string | null }) {
-    const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+    const isAdmin = user.role === "ADMIN";
+    const isManager = user.role === "MANAGER";
+
+    let whereClause: { userId?: number | { in: number[] } } = {
+      userId: user.id,
+    };
+
+    if (isAdmin) {
+      // Admin can see all requests
+      whereClause = {};
+    } else if (isManager) {
+      // Manager can only see requests from direct subordinates
+      const directSubordinates = await this.prisma.requestUserInfo.findMany({
+        where: { bossId: user.id },
+        select: { id: true },
+      });
+      const subordinateIds = directSubordinates.map((sub) => sub.id);
+      // Include manager's own requests and their direct subordinates' requests
+      whereClause = { userId: { in: [user.id, ...subordinateIds] } };
+    }
 
     const requests = await this.prisma.availabilityRequest.findMany({
-      where: isAdminOrManager ? {} : { userId: user.id },
+      where: whereClause,
       include: {
         user: true,
         approvedBy: true,
@@ -216,10 +235,29 @@ export class RequestsService {
   }
 
   async findAllGeneralRequests(user: { id: number; role: string | null }) {
-    const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+    const isAdmin = user.role === "ADMIN";
+    const isManager = user.role === "MANAGER";
+
+    let whereClause: { userId?: number | { in: number[] } } = {
+      userId: user.id,
+    };
+
+    if (isAdmin) {
+      // Admin can see all requests
+      whereClause = {};
+    } else if (isManager) {
+      // Manager can only see requests from direct subordinates
+      const directSubordinates = await this.prisma.requestUserInfo.findMany({
+        where: { bossId: user.id },
+        select: { id: true },
+      });
+      const subordinateIds = directSubordinates.map((sub) => sub.id);
+      // Include manager's own requests and their direct subordinates' requests
+      whereClause = { userId: { in: [user.id, ...subordinateIds] } };
+    }
 
     return await this.prisma.generalRequest.findMany({
-      where: isAdminOrManager ? {} : { userId: user.id },
+      where: whereClause,
       include: {
         user: true,
         approvedBy: true,
