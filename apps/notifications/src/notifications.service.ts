@@ -5,6 +5,7 @@ import {
   SendNotificationDto,
   TaskAssignedEventDto,
   UserCreatedEventDto,
+  UserDeletedAdminNotificationEventDto,
   UserRemovedEventDto,
   UserUpdatedEventDto,
 } from "@app/contracts";
@@ -238,6 +239,83 @@ The Hiver Team
       );
       throw error;
     }
+  }
+
+  async handleUserDeletedAdminNotification(
+    event: UserDeletedAdminNotificationEventDto,
+  ): Promise<void> {
+    // Get all admin users in the company
+    const adminUsers = await this.prisma.notificationUserInfo.findMany({
+      where: {
+        companyId: event.companyId,
+      },
+    });
+
+    if (adminUsers.length === 0) {
+      this.logger.warn(
+        `No admin users found for company ${String(event.companyId)}, skipping user deletion notification`,
+      );
+      return;
+    }
+
+    // Filter admins with valid emails
+    const adminsWithEmail = adminUsers.filter((admin) => admin.email != null);
+
+    if (adminsWithEmail.length === 0) {
+      this.logger.warn(
+        `No admin users with email addresses found for company ${String(event.companyId)}`,
+      );
+      return;
+    }
+
+    const deletedUserInfo = `${event.deletedUserName ?? "User"} (${event.deletedUserEmail ?? "No email"}) - ${event.deletedUserRole ?? "No role"}`;
+    const deletedByInfo = event.deletedByUserName
+      ? `by ${event.deletedByUserName}`
+      : "from the system";
+
+    const emailSubject = "User Deleted from System";
+    const emailMessage = `
+Hello Administrator,
+
+A user has been deleted from the system.
+
+Deleted User Details:
+- Name: ${event.deletedUserName ?? "Unknown"}
+- Email: ${event.deletedUserEmail ?? "No email"}
+- Role: ${event.deletedUserRole ?? "No role"}
+- User ID: ${String(event.deletedUserId)}
+- Deleted ${deletedByInfo}
+
+This is an automated notification for your records.
+
+Best regards,
+The Hiver Team
+    `.trim();
+
+    // Send email to all admins
+    const emailPromises = adminsWithEmail.map(async (admin) => {
+      try {
+        await this.mailService.sendGenericEmail(
+          admin.email!,
+          emailSubject,
+          emailMessage,
+        );
+        this.logger.log(
+          `User deletion notification sent to admin ${admin.email} for deleted user ${String(event.deletedUserId)}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to send user deletion notification to admin ${admin.email}`,
+          error instanceof Error ? error.stack : undefined,
+        );
+        // Don't throw here, continue sending to other admins
+      }
+    });
+
+    await Promise.allSettled(emailPromises);
+    this.logger.log(
+      `User deletion notifications sent to ${String(adminsWithEmail.length)} administrators`,
+    );
   }
 
   // Notification sending

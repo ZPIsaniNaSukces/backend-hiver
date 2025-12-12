@@ -5,6 +5,7 @@ import {
   TaskAssignedEventDto,
   TasksMessageTopic,
   UserCreatedEventDto,
+  UserDeletedAdminNotificationEventDto,
   UserRemovedEventDto,
   UserUpdatedEventDto,
   UsersMessageTopic,
@@ -99,6 +100,27 @@ export class NotificationsEventsController {
     } catch (error) {
       this.logger.error(
         `Failed to handle task assignment for user ${String(event.assigneeId)}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error; // kafka retry, nice trick
+    }
+  }
+
+  @EventPattern(NotificationsMessageTopic.USER_DELETED_ADMIN_NOTIFICATION)
+  async handleUserDeletedAdminNotification(
+    @Payload() event: UserDeletedAdminNotificationEventDto,
+  ): Promise<void> {
+    try {
+      this.logger.log(
+        `Received user deleted notification event for user ${String(event.deletedUserId)}`,
+      );
+      await this.notificationsService.handleUserDeletedAdminNotification(event);
+      this.logger.log(
+        `Successfully processed user deletion notification for user ${String(event.deletedUserId)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle user deletion notification for user ${String(event.deletedUserId)}`,
         error instanceof Error ? error.stack : String(error),
       );
       throw error; // kafka retry, nice trick
