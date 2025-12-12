@@ -4,6 +4,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { Transport } from "@nestjs/microservices";
 import type { MicroserviceOptions } from "@nestjs/microservices";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { NotificationsModule } from "./notifications.module";
 
@@ -27,12 +28,25 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
   );
 
   app.useGlobalFilters(new PrismaExceptionFilter());
+
+  // Swagger configuration
+  const config = new DocumentBuilder()
+    .setTitle("Notifications Service API")
+    .setDescription("API documentation for the Notifications microservice")
+    .setVersion("1.0")
+    .addBearerAuth()
+    .addTag("Health", "Health check endpoints")
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api", app, document);
 
   await app.startAllMicroservices();
   await app.listen(process.env.PORT ?? 3005);

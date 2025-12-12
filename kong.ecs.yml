@@ -59,6 +59,13 @@ services:
         methods:
           - GET
         strip_path: false
+      - name: users-api-docs
+        paths:
+          - /users-api
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: true
   - name: presence-service
     host: presence.hiver-dev.local
     port: 3001
@@ -100,6 +107,13 @@ services:
         methods:
           - GET
         strip_path: false
+      - name: presence-api-docs
+        paths:
+          - /presence-api
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: true
 
   - name: requests-service
     host: requests.hiver-dev.local
@@ -127,6 +141,13 @@ services:
         methods:
           - GET
         strip_path: false
+      - name: requests-api-docs
+        paths:
+          - /requests-api
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: true
 
   - name: tasks-service
     host: tasks.hiver-dev.local
@@ -154,6 +175,36 @@ services:
         methods:
           - GET
         strip_path: false
+      - name: tasks-api-docs
+        paths:
+          - /tasks-api
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: true
+
+  - name: notifications-service
+    host: notifications.hiver-dev.local
+    port: 3005
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 0
+    routes:
+      - name: notifications-health
+        paths:
+          - /notifications
+        methods:
+          - GET
+        strip_path: true
+      - name: notifications-api-docs
+        paths:
+          - /notifications-api
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: true
 
 plugins:
   - name: cors

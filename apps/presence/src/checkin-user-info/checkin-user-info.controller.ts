@@ -16,9 +16,18 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 
 import { CheckinUserInfoService } from "./checkin-user-info.service";
 
+@ApiTags("Check-in User Info")
+@ApiBearerAuth()
 @Controller("checkin-user-info")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CheckinUserInfoController {
@@ -29,6 +38,10 @@ export class CheckinUserInfoController {
   ) {}
 
   @Get(":userId")
+  @ApiOperation({ summary: "Get check-in user info by user ID" })
+  @ApiParam({ name: "userId", description: "User ID" })
+  @ApiResponse({ status: 200, description: "Returns check-in user info" })
+  @ApiResponse({ status: 404, description: "User info not found" })
   async findOne(
     @Param("userId", ParseIntPipe) userId: number,
     @CurrentUser() user: AuthenticatedUser,

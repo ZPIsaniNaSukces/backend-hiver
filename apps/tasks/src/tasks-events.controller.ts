@@ -7,9 +7,11 @@ import {
 
 import { Controller } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
+import { ApiTags } from "@nestjs/swagger";
 
 import { TasksService } from "./tasks.service";
 
+@ApiTags("Tasks Events")
 @Controller()
 export class TasksEventsController {
   constructor(private readonly tasksService: TasksService) {}
