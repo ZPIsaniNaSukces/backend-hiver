@@ -1,7 +1,7 @@
 export enum TasksMessageTopic {
-  // to be defined in the future
+  TASK_ASSIGNED = "taskAssigned",
 }
 
 export const TASKS_MESSAGE_TOPICS: TasksMessageTopic[] = [
-  // to be defined in the future
+  TasksMessageTopic.TASK_ASSIGNED,
 ];

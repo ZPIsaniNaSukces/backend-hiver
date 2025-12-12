@@ -2,6 +2,8 @@ import {
   LeaveRequestApprovedEventDto,
   NotificationsMessageTopic,
   SendNotificationDto,
+  TaskAssignedEventDto,
+  TasksMessageTopic,
   UserCreatedEventDto,
   UserRemovedEventDto,
   UserUpdatedEventDto,
@@ -76,6 +78,27 @@ export class NotificationsEventsController {
     } catch (error) {
       this.logger.error(
         `Failed to handle leave request approval for user ${String(event.userId)}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error; // kafka retry, nice trick
+    }
+  }
+
+  @EventPattern(TasksMessageTopic.TASK_ASSIGNED)
+  async handleTaskAssigned(
+    @Payload() event: TaskAssignedEventDto,
+  ): Promise<void> {
+    try {
+      this.logger.log(
+        `Received task assigned event for user ${String(event.assigneeId)}`,
+      );
+      await this.notificationsService.handleTaskAssigned(event);
+      this.logger.log(
+        `Successfully processed task assignment notification for user ${String(event.assigneeId)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle task assignment for user ${String(event.assigneeId)}`,
         error instanceof Error ? error.stack : String(error),
       );
       throw error; // kafka retry, nice trick

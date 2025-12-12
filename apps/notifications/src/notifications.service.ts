@@ -3,6 +3,7 @@ import {
   NotificationStatus,
   NotificationType,
   SendNotificationDto,
+  TaskAssignedEventDto,
   UserCreatedEventDto,
   UserRemovedEventDto,
   UserUpdatedEventDto,
@@ -168,6 +169,71 @@ The Hiver Team
     } catch (error) {
       this.logger.error(
         `Failed to send leave request approval email to ${userInfo.email}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  async handleTaskAssigned(event: TaskAssignedEventDto): Promise<void> {
+    // Get user info
+    const userInfo = await this.prisma.notificationUserInfo.findUnique({
+      where: { id: event.assigneeId },
+    });
+
+    if (userInfo == null) {
+      this.logger.warn(
+        `User info not found for user ${String(event.assigneeId)}, skipping task assignment notification`,
+      );
+      return;
+    }
+
+    if (userInfo.email == null) {
+      this.logger.warn(
+        `User ${String(event.assigneeId)} does not have an email address, skipping task assignment notification`,
+      );
+      return;
+    }
+
+    // Format due date if present
+    const dueDateString = event.dueDate
+      ? new Date(event.dueDate).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : null;
+
+    const emailSubject = `New Task Assigned: ${event.taskTitle}`;
+    const emailMessage = `
+Hello ${event.assigneeName ?? "User"},
+
+You have been assigned a new task!
+
+Task Details:
+- Title: ${event.taskTitle}
+- Description: ${event.taskDescription ?? "No description provided"}
+- Assigned By: ${event.reporterName ?? "Administrator"}
+${dueDateString ? `- Due Date: ${dueDateString}` : ""}
+
+Please log in to Hiver to view the task details and start working on it.
+
+Best regards,
+The Hiver Team
+    `.trim();
+
+    try {
+      await this.mailService.sendGenericEmail(
+        userInfo.email,
+        emailSubject,
+        emailMessage,
+      );
+      this.logger.log(
+        `Task assignment email sent to ${userInfo.email} for user ${String(event.assigneeId)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send task assignment email to ${userInfo.email}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;
