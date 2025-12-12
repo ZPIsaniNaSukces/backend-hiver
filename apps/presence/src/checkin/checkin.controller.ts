@@ -15,6 +15,12 @@ import {
 } from "@app/contracts/checkin";
 
 import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 
 import {
   CheckinService,
@@ -24,6 +30,8 @@ import {
   MonthlyStatsResponse,
 } from "./checkin.service";
 
+@ApiTags("Check-in/Check-out")
+@ApiBearerAuth()
 @Controller("checkincheckout")
 @UseGuards(JwtAuthGuard, RolesGuard, HierarchyScopedGuard)
 export class CheckinController {
@@ -33,6 +41,9 @@ export class CheckinController {
   @CompanyScoped({ source: "body", propertyPath: "companyId" })
   @HierarchyScoped({ source: "body", propertyPath: "userId" })
   @UseGuards(CompanyScopedGuard)
+  @ApiOperation({ summary: "Perform check-in or check-out" })
+  @ApiResponse({ status: 201, description: "Check-in/out successful" })
+  @ApiResponse({ status: 400, description: "Invalid NFC tag or signature" })
   async checkinCheckout(
     @Body() dto: CheckinCheckoutDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -46,6 +57,11 @@ export class CheckinController {
     propertyPath: "userId",
     allowMissing: true,
   })
+  @ApiOperation({ summary: "Get current check-in status" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns check-in status with history",
+  })
   async getStatus(
     @Query() query: GetCheckinStatusDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -54,6 +70,8 @@ export class CheckinController {
   }
 
   @Get("stats")
+  @ApiOperation({ summary: "Get hourly check-in statistics" })
+  @ApiResponse({ status: 200, description: "Returns hourly check-in stats" })
   async getStats(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<HourlyCheckinStat[]> {
@@ -66,6 +84,8 @@ export class CheckinController {
     propertyPath: "userId",
     allowMissing: false,
   })
+  @ApiOperation({ summary: "Get monthly check-in statistics for a user" })
+  @ApiResponse({ status: 200, description: "Returns monthly stats" })
   async getMonthlyStats(
     @Query() query: GetMonthlyStatsDto,
     @CurrentUser() user: AuthenticatedUser,

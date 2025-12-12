@@ -1,4 +1,10 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 
 import { AuthService } from "./auth.service";
 import { CurrentUser } from "./decorators/current-user.decorator";
@@ -7,22 +13,33 @@ import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import type { AuthenticatedUser } from "./interfaces/authenticated-user.type";
 
+@ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("login")
+  @ApiOperation({ summary: "Login with email and password" })
+  @ApiResponse({ status: 200, description: "Successfully logged in" })
+  @ApiResponse({ status: 401, description: "Invalid credentials" })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
   @Post("refresh")
+  @ApiOperation({ summary: "Refresh access token using refresh token" })
+  @ApiResponse({ status: 200, description: "Token refreshed successfully" })
+  @ApiResponse({ status: 401, description: "Invalid refresh token" })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refresh(refreshTokenDto.refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get("me")
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get current authenticated user" })
+  @ApiResponse({ status: 200, description: "Returns current user info" })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
   me(@CurrentUser() user: AuthenticatedUser | undefined) {
     return user;
   }

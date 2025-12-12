@@ -9,9 +9,11 @@ import {
 
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
+import { ApiTags } from "@nestjs/swagger";
 
 import { NotificationsService } from "./notifications.service";
 
+@ApiTags("Notifications Events")
 @Controller()
 export class NotificationsEventsController {
   private readonly logger = new Logger(NotificationsEventsController.name);

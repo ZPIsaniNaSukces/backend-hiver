@@ -27,6 +27,8 @@ export class UserUpdatedEventDto {
   @IsOptional()
   @IsString()
   title?: string | null;
+
+  @IsOptional()
   @IsEmail()
   email?: string;
 

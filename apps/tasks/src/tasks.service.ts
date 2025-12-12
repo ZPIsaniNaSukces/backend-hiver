@@ -135,21 +135,6 @@ export class TasksService {
       assigneeId: updateTaskDto.assigneeId,
     };
 
-    // Auto-set completedAt when status changes to DONE
-    if (
-      updateTaskDto.status === TASK_STATUS.DONE &&
-      task.status !== TASK_STATUS.DONE
-    ) {
-      data.completedAt = new Date();
-    }
-    // Clear completedAt when status changes from DONE to TODO
-    else if (
-      updateTaskDto.status === TASK_STATUS.TODO &&
-      task.status === TASK_STATUS.DONE
-    ) {
-      data.completedAt = null;
-    }
-
     return await this.prisma.task.update({
       where: { id },
       data,
@@ -320,32 +305,20 @@ export class TasksService {
     const endDate = new Date();
     endDate.setHours(23, 59, 59, 999);
 
-    // Fetch all relevant tasks: created before or during the period, or completed during the period
+    // Fetch all relevant tasks: created before or during the period (and in same company)
     const tasks = await this.prisma.task.findMany({
       where: {
         assignee: {
           companyId: user.companyId,
         },
-        OR: [
-          // Tasks created during or before the period
-          {
-            createdAt: {
-              lte: endDate,
-            },
-          },
-          // Tasks completed during the period (even if created earlier)
-          {
-            completedAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-        ],
+        createdAt: {
+          lte: endDate,
+        },
       },
       select: {
         status: true,
         createdAt: true,
-        completedAt: true,
+        updatedAt: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -377,10 +350,10 @@ export class TasksService {
       for (const task of tasks) {
         const wasCreatedByThisDay = task.createdAt <= dayEnd;
         const wasCompletedByThisDay =
-          task.completedAt != null && task.completedAt <= dayEnd;
+          task.status === TASK_STATUS.DONE && task.updatedAt <= dayEnd;
         const wasCompletedOnThisDay =
-          task.completedAt != null &&
-          task.completedAt.toISOString().split("T")[0] === dateString;
+          task.status === TASK_STATUS.DONE &&
+          task.updatedAt.toISOString().split("T")[0] === dateString;
 
         // Count as pending if: created by this day AND not completed by this day
         if (wasCreatedByThisDay && !wasCompletedByThisDay) {
