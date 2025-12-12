@@ -1,4 +1,5 @@
 import {
+  LeaveRequestApprovedEventDto,
   NotificationStatus,
   NotificationType,
   SendNotificationDto,
@@ -101,6 +102,76 @@ export class NotificationsService {
     });
 
     this.logger.log(`User info removed for user ${String(event.id)}`);
+  }
+
+  async handleLeaveRequestApproved(
+    event: LeaveRequestApprovedEventDto,
+  ): Promise<void> {
+    // Get user info
+    const userInfo = await this.prisma.notificationUserInfo.findUnique({
+      where: { id: event.userId },
+    });
+
+    if (userInfo == null) {
+      this.logger.warn(
+        `User info not found for user ${String(event.userId)}, skipping leave request approval notification`,
+      );
+      return;
+    }
+
+    if (userInfo.email == null) {
+      this.logger.warn(
+        `User ${String(event.userId)} does not have an email address, skipping leave request approval notification`,
+      );
+      return;
+    }
+
+    // Format dates for the email
+    const startDate = new Date(event.startsAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const endDate = new Date(event.endsAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const emailSubject = "Your Leave Request Has Been Approved";
+    const emailMessage = `
+Hello ${event.userName ?? "User"},
+
+Your leave request has been approved!
+
+Leave Details:
+- Start Date: ${startDate}
+- End Date: ${endDate}
+- Reason: ${event.reason ?? "No reason provided"}
+- Approved By: ${event.approverName ?? "Administrator"}
+
+Enjoy your time off!
+
+Best regards,
+The Hiver Team
+    `.trim();
+
+    try {
+      await this.mailService.sendGenericEmail(
+        userInfo.email,
+        emailSubject,
+        emailMessage,
+      );
+      this.logger.log(
+        `Leave request approval email sent to ${userInfo.email} for user ${String(event.userId)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send leave request approval email to ${userInfo.email}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 
   // Notification sending

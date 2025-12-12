@@ -1,4 +1,5 @@
 import {
+  LeaveRequestApprovedEventDto,
   NotificationsMessageTopic,
   SendNotificationDto,
   UserCreatedEventDto,
@@ -54,6 +55,27 @@ export class NotificationsEventsController {
     } catch (error) {
       this.logger.error(
         `Failed to handle sendNotification for user ${String(dto.userId)}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw error; // kafka retry, nice trick
+    }
+  }
+
+  @EventPattern(NotificationsMessageTopic.LEAVE_REQUEST_APPROVED)
+  async handleLeaveRequestApproved(
+    @Payload() event: LeaveRequestApprovedEventDto,
+  ): Promise<void> {
+    try {
+      this.logger.log(
+        `Received leave request approved event for user ${String(event.userId)}`,
+      );
+      await this.notificationsService.handleLeaveRequestApproved(event);
+      this.logger.log(
+        `Successfully processed leave request approval notification for user ${String(event.userId)}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle leave request approval for user ${String(event.userId)}`,
         error instanceof Error ? error.stack : String(error),
       );
       throw error; // kafka retry, nice trick
